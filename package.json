@@ -1,0 +1,24 @@
+{
+  "name": "kid-logic-lab",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "國小學童專注力與邏輯訓練純靜態網頁遊戲 — 零個資、離線優先 PWA",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "@types/qrcode-generator": "^0.0.16",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.3",
+    "vite-plugin-pwa": "^0.21.1",
+    "vitest": "^2.1.8"
+  },
+  "dependencies": {
+    "qrcode-generator": "^2.0.4"
+  }
+}
