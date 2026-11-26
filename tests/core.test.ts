@@ -17,6 +17,8 @@ import { generateBalancePuzzle } from '../src/games/middle/balanceScale';
 import { computeRuns } from '../src/games/senior/nonogram';
 import { isValidTakuzuBoard } from '../src/games/senior/binaryPuzzle';
 import { evaluateArithmeticExpr } from '../src/games/senior/target24';
+import { generateFlankerTrial } from '../src/games/middle/flankerFish';
+import { isAxTarget } from '../src/games/senior/axCpt';
 
 describe('SeededRng', () => {
   it('produces identical deterministic sequences for the same seed', () => {
@@ -193,5 +195,19 @@ describe('New Games Pure Logic', () => {
     expect(evaluateArithmeticExpr('(8-4)*6')).toBe(24);
     expect(evaluateArithmeticExpr('8/(3-8/3)')).toBeCloseTo(24, 5);
     expect(evaluateArithmeticExpr('1/0')).toBeNull();
+  });
+
+  it('generates valid Flanker congruent/incongruent trials', () => {
+    const rng = new SeededRng(101);
+    const t = generateFlankerTrial(rng, 1.0);
+    expect(t.congruent).toBe(false);
+    expect(t.centerDir).not.toBe(t.flankDir);
+  });
+
+  it('evaluates AX-CPT target pair strictly as A -> X', () => {
+    expect(isAxTarget('A', 'X')).toBe(true);
+    expect(isAxTarget('A', 'Y')).toBe(false);
+    expect(isAxTarget('B', 'X')).toBe(false);
+    expect(isAxTarget(null, 'X')).toBe(false);
   });
 });

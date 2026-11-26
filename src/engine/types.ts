@@ -27,7 +27,10 @@ export type GameId =
   | 'zebraPuzzle'
   | 'nonogram'
   | 'binaryPuzzle'
-  | 'target24';
+  | 'target24'
+  | 'waitSignal'
+  | 'flankerFish'
+  | 'axCpt';
 
 export const ALL_GAME_IDS: readonly GameId[] = [
   'gonogo',
@@ -38,6 +41,7 @@ export const ALL_GAME_IDS: readonly GameId[] = [
   'conjunctionSearch',
   'symmetryGrid',
   'mastermind',
+  'waitSignal',
   'hanoi',
   'spatialConflict',
   'matrixPattern',
@@ -46,6 +50,7 @@ export const ALL_GAME_IDS: readonly GameId[] = [
   'sokoban',
   'minesweeper',
   'balanceScale',
+  'flankerFish',
   'nback',
   'logicGate',
   'sudoku6x6',
@@ -55,6 +60,7 @@ export const ALL_GAME_IDS: readonly GameId[] = [
   'nonogram',
   'binaryPuzzle',
   'target24',
+  'axCpt',
 ] as const;
 
 export type CognitiveAxis =

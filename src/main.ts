@@ -8,6 +8,7 @@ import { fireflyMemoryGame } from './games/junior/fireflyMemory';
 import { conjunctionSearchGame } from './games/junior/conjunctionSearch';
 import { symmetryGridGame } from './games/junior/symmetryGrid';
 import { mastermindGame } from './games/junior/mastermind';
+import { waitSignalGame } from './games/junior/waitSignal';
 import { hanoiGame } from './games/middle/hanoi';
 import { spatialConflictGame } from './games/middle/spatialConflict';
 import { matrixPatternGame } from './games/middle/matrixPattern';
@@ -16,6 +17,7 @@ import { lightsOutGame } from './games/middle/lightsOut';
 import { sokobanGame } from './games/middle/sokoban';
 import { minesweeperGame } from './games/middle/minesweeper';
 import { balanceScaleGame } from './games/middle/balanceScale';
+import { flankerFishGame } from './games/middle/flankerFish';
 import { nbackGame } from './games/senior/nback';
 import { logicGateGame } from './games/senior/logicGate';
 import { sudoku6x6Game } from './games/senior/sudoku6x6';
@@ -25,6 +27,7 @@ import { zebraPuzzleGame } from './games/senior/zebraPuzzle';
 import { nonogramGame } from './games/senior/nonogram';
 import { binaryPuzzleGame } from './games/senior/binaryPuzzle';
 import { target24Game } from './games/senior/target24';
+import { axCptGame } from './games/senior/axCpt';
 import { loadPrefs, savePrefs } from './storage/prefs';
 import { saveSession } from './storage/db';
 import { buildShareUrl, parseUrlSeed } from './storage/urlSeed';
@@ -49,6 +52,7 @@ const GAMES: Record<GameId, GameModule> = {
   conjunctionSearch: conjunctionSearchGame,
   symmetryGrid: symmetryGridGame,
   mastermind: mastermindGame,
+  waitSignal: waitSignalGame,
   hanoi: hanoiGame,
   spatialConflict: spatialConflictGame,
   matrixPattern: matrixPatternGame,
@@ -57,6 +61,7 @@ const GAMES: Record<GameId, GameModule> = {
   sokoban: sokobanGame,
   minesweeper: minesweeperGame,
   balanceScale: balanceScaleGame,
+  flankerFish: flankerFishGame,
   nback: nbackGame,
   logicGate: logicGateGame,
   sudoku6x6: sudoku6x6Game,
@@ -66,12 +71,26 @@ const GAMES: Record<GameId, GameModule> = {
   nonogram: nonogramGame,
   binaryPuzzle: binaryPuzzleGame,
   target24: target24Game,
+  axCpt: axCptGame,
 };
 
-const AGE_TIERS: { id: AgeTier; label: string }[] = [
+const ADHD_GAME_IDS: readonly GameId[] = [
+  'waitSignal',
+  'flankerFish',
+  'axCpt',
+  'gonogo',
+  'dccsMaze',
+  'spatialConflict',
+  'nback',
+];
+
+type HomeFilter = AgeTier | 'adhd';
+
+const AGE_TIERS: { id: HomeFilter; label: string }[] = [
   { id: 'junior', label: '低年級（6–8 歲）' },
   { id: 'middle', label: '中年級（8–10 歲）' },
   { id: 'senior', label: '高年級（10–12 歲）' },
+  { id: 'adhd', label: '🌟 ADHD 專注特訓' },
 ];
 
 const THEME_SKINS: { id: ThemeSkin; label: string }[] = [
@@ -82,6 +101,7 @@ const THEME_SKINS: { id: ThemeSkin; label: string }[] = [
 
 const appEl = document.getElementById('app')!;
 let prefs = loadPrefs();
+let activeFilter: HomeFilter = prefs.ageTier;
 audioGateway.setMuted(prefs.muted);
 
 let cleanupActiveGame: (() => void) | null = null;
@@ -167,7 +187,7 @@ function renderHome(): void {
   const tierTabs = AGE_TIERS.map(
     (t) => `
       <button type="button"
-        class="tier-tab ${prefs.ageTier === t.id ? 'is-active' : ''}"
+        class="tier-tab ${activeFilter === t.id ? 'is-active' : ''}"
         data-tier="${t.id}">
         ${t.label}
       </button>
@@ -184,7 +204,10 @@ function renderHome(): void {
     `,
   ).join('');
 
-  const filteredGames = Object.values(GAMES).filter((g) => g.ageTier === prefs.ageTier);
+  const filteredGames =
+    activeFilter === 'adhd'
+      ? ADHD_GAME_IDS.map((id) => GAMES[id])
+      : Object.values(GAMES).filter((g) => g.ageTier === activeFilter);
   const cardsHtml = filteredGames
     .map(
       (g) => `
@@ -264,8 +287,12 @@ function renderHome(): void {
 
   main.querySelectorAll<HTMLButtonElement>('.tier-tab').forEach((btn) => {
     btn.addEventListener('click', () => {
-      prefs.ageTier = btn.dataset.tier as AgeTier;
-      savePrefs(prefs);
+      const val = btn.dataset.tier as HomeFilter;
+      activeFilter = val;
+      if (val !== 'adhd') {
+        prefs.ageTier = val;
+        savePrefs(prefs);
+      }
       renderHome();
     });
   });
