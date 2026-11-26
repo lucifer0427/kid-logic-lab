@@ -149,3 +149,25 @@ export function renderTokenSvg(token: OkabeItoToken, size = 36): string {
 
   return `<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" aria-hidden="true">${shapeEl}</svg>`;
 }
+
+const THEME_EMOJIS: Record<'space' | 'forest', string[]> = {
+  space: ['☀️', '🛸', '🪐', '💎', '⭐', '☄️'],
+  forest: ['🐞', '🐢', '🌲', '🦋', '🌸', '🍄'],
+};
+
+export function renderThemedTokenSvg(
+  tokenIndex: number,
+  skin: 'geometry' | 'space' | 'forest' = 'geometry',
+  size = 36,
+): string {
+  const token = OKABE_ITO_PALETTE[tokenIndex % OKABE_ITO_PALETTE.length];
+  if (skin === 'geometry') {
+    return renderTokenSvg(token, size);
+  }
+  const emoji = THEME_EMOJIS[skin][tokenIndex % 6];
+  const baseSvg = renderTokenSvg(token, size);
+  return `<span class="themed-token" style="position:relative;display:inline-flex;align-items:center;justify-content:center;width:${size}px;height:${size}px;">
+    ${baseSvg}
+    <span style="position:absolute;font-size:${Math.round(size * 0.48)}px;line-height:1;pointer-events:none;">${emoji}</span>
+  </span>`;
+}

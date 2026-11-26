@@ -714,3 +714,274 @@ body {
     font-size: 0.95rem;
   }
 }
+
+.home-controls-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.skin-nav {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.skin-btn {
+  min-height: 40px;
+  padding: 6px 12px;
+  font-size: 0.85rem;
+}
+
+.daily-banner {
+  background: linear-gradient(135deg, #EFF6FF, #F0FDF4);
+  border-color: #93C5FD;
+}
+
+.daily-quest-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 10px;
+}
+
+.daily-quest-item {
+  min-height: 56px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 2px solid #93C5FD;
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.daily-quest-item.is-done {
+  background: #DCFCE7;
+  border-color: var(--success);
+}
+
+.quest-step {
+  font-size: 0.78rem;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.badges-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+}
+
+.badge-tile {
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 4px;
+  font-size: 0.85rem;
+}
+
+.badge-tile.is-locked {
+  opacity: 0.55;
+  background: #F8FAFC;
+}
+
+.badge-tile.is-unlocked {
+  background: #FEFCE8;
+  border-color: #FACC15;
+}
+
+.badge-icon {
+  font-size: 1.5rem;
+}
+
+.badge-desc {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.new-badges-banner {
+  background: #FEFCE8;
+  border: 1px solid #FACC15;
+  border-radius: 12px;
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.new-badges-list {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.summary-kid-bars {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.teacher-metrics-details {
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+  font-size: 0.9rem;
+}
+
+.teacher-metrics-details summary {
+  cursor: pointer;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.firefly-grid,
+.lights-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.firefly-stone,
+.lights-cell {
+  width: 74px;
+  height: 74px;
+  border-radius: 16px;
+  border: 2px solid var(--border);
+  background: #E2E8F0;
+  color: #475569;
+  font-size: 1.5rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.14s ease, background-color 0.14s ease;
+}
+
+.firefly-stone.is-lit {
+  background: #F0E442;
+  border-color: #0F172A;
+  color: #0F172A;
+  transform: scale(1.06);
+}
+
+.lights-cell {
+  width: 66px;
+  height: 66px;
+}
+
+.lights-cell.is-on {
+  background: #0072B2;
+  border-color: #0F172A;
+  color: #FFFFFF;
+}
+
+.lights-cell.is-off {
+  background: #F8FAFC;
+  color: #94A3B8;
+}
+
+.schulte-a {
+  background: #FFF7ED;
+  border-color: #E69F00;
+  color: #B45309;
+}
+
+.schulte-b {
+  background: #EFF6FF;
+  border-color: #0072B2;
+  color: #0369A1;
+}
+
+.maze-cell.is-visited {
+  background: #EFF6FF;
+  color: #93C5FD;
+}
+
+.cmd-chip.is-error-chip {
+  background: #FFEDD5;
+  border-color: #D55E00;
+  color: #9A3412;
+}
+
+.zebra-clues {
+  width: 100%;
+  background: #F8FAFC;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-size: 0.92rem;
+}
+
+.zebra-clues p {
+  margin: 4px 0;
+}
+
+.zebra-grids-host {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.zebra-table {
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.zebra-table th,
+.zebra-table td {
+  border: 1px solid var(--border);
+  padding: 4px;
+  text-align: center;
+}
+
+.zebra-table th {
+  background: #F1F5F9;
+  padding: 6px 10px;
+}
+
+.zebra-cell {
+  width: 48px;
+  height: 48px;
+  border: none;
+  background: var(--surface);
+  font-size: 1.2rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.zebra-cell.mark-1 {
+  background: #DCFCE7;
+  color: #009E73;
+}
+
+.zebra-cell.mark-2 {
+  background: #F1F5F9;
+  color: #64748B;
+}
+
+.trend-svg {
+  width: 100%;
+  max-width: 360px;
+  margin: 0 auto;
+}
+
+@keyframes popSoft {
+  0% {
+    transform: scale(0.96);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.pop-soft {
+  animation: popSoft 0.25s ease-out;
+}

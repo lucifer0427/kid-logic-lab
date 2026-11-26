@@ -6,13 +6,14 @@ import { VisualTimer } from '../../ui/components/VisualTimer';
 import { createTutorialOverlay } from '../../ui/components/TutorialOverlay';
 import { computeSessionMetrics } from '../../telemetry/asiCalculator';
 
-export type MazeCmd = 'FWD' | 'LEFT' | 'RIGHT' | 'REPEAT2';
+export type MazeCmd = 'FWD' | 'LEFT' | 'RIGHT' | 'REPEAT2' | 'REPEAT3';
 
 interface MazeLevelSpec {
   size: number;
   start: [number, number];
   dir: number; // 0:N, 1:E, 2:S, 3:W
   goal: [number, number];
+  keyPos: [number, number] | null;
   walls: Set<string>;
 }
 
@@ -31,13 +32,22 @@ function buildMaze(seed: number, level: number): MazeLevelSpec {
   const walls = new Set<string>();
 
   // Carve a guaranteed valid path (right/up steps) then sprinkle non-blocking walls
-  const path = new Set<string>(['' + start[0] + ',' + start[1]]);
+  const pathList: [number, number][] = [start];
+  const path = new Set<string>([`${start[0]},${start[1]}`]);
   let r = start[0];
   let c = start[1];
   while (r > goal[0] || c < goal[1]) {
     if (r > goal[0] && (c === goal[1] || rng.next() < 0.5)) r -= 1;
     else c += 1;
+    pathList.push([r, c]);
     path.add(`${r},${c}`);
+  }
+
+  // At Lv2+, place a key on an intermediate path tile so the path is always solvable!
+  let keyPos: [number, number] | null = null;
+  if (level >= 2 && pathList.length > 3) {
+    const mid = pathList[Math.floor(pathList.length / 2)];
+    keyPos = [mid[0], mid[1]];
   }
 
   const wallTarget = level >= 2 ? 4 : 2;
@@ -52,16 +62,30 @@ function buildMaze(seed: number, level: number): MazeLevelSpec {
     }
   }
 
-  return { size, start, dir: 1, goal, walls };
+  return { size, start, dir: 1, goal, keyPos, walls };
+}
+
+export interface ExpandedStep {
+  cmd: 'FWD' | 'LEFT' | 'RIGHT';
+  sourceIdx: number;
 }
 
 export function expandCommands(cmds: MazeCmd[]): ('FWD' | 'LEFT' | 'RIGHT')[] {
-  const out: ('FWD' | 'LEFT' | 'RIGHT')[] = [];
+  return expandCommandsWithSource(cmds).map((s) => s.cmd);
+}
+
+export function expandCommandsWithSource(cmds: MazeCmd[]): ExpandedStep[] {
+  const out: ExpandedStep[] = [];
   for (let i = 0; i < cmds.length; i++) {
-    if (cmds[i] === 'REPEAT2' && out.length > 0) {
-      out.push(out[out.length - 1]);
-    } else if (cmds[i] !== 'REPEAT2') {
-      out.push(cmds[i] as 'FWD' | 'LEFT' | 'RIGHT');
+    const cmd = cmds[i];
+    if (cmd === 'REPEAT2' && out.length > 0) {
+      out.push({ cmd: out[out.length - 1].cmd, sourceIdx: i });
+    } else if (cmd === 'REPEAT3' && out.length > 0) {
+      const prev = out[out.length - 1].cmd;
+      out.push({ cmd: prev, sourceIdx: i });
+      out.push({ cmd: prev, sourceIdx: i });
+    } else if (cmd !== 'REPEAT2' && cmd !== 'REPEAT3') {
+      out.push({ cmd, sourceIdx: i });
     }
   }
   return out;
@@ -70,7 +94,7 @@ export function expandCommands(cmds: MazeCmd[]): ('FWD' | 'LEFT' | 'RIGHT')[] {
 export const blockMazeGame: GameModule = {
   id: 'blockMaze',
   title: '積木指令序列迷宮',
-  subtitle: '組合「前進、左轉、右轉、重複」積木後一次執行，觀察軌跡並除錯',
+  subtitle: '組合「前進、轉向、重複」積木後一次執行；Lv.2 起需先拿鑰匙才能開門！',
   ageTier: 'middle',
   ageLabel: '中年級 8–10 歲',
   evidenceBadge: '教育科技標準實證延伸（ISTE 演算法思維）',
@@ -87,7 +111,10 @@ export const blockMazeGame: GameModule = {
     const program: MazeCmd[] = [];
     let botPos: [number, number] = [...maze.start];
     let botDir = maze.dir;
+    let hasKey = maze.keyPos === null;
+    let visited = new Set<string>([`${maze.start[0]},${maze.start[1]}`]);
     let collisionKey: string | null = null;
+    let failingChipIdx: number | null = null;
     let running = false;
     let disposed = false;
     let lastActionMs = performance.now();
@@ -120,15 +147,16 @@ export const blockMazeGame: GameModule = {
       FWD: '⬆ 前進',
       LEFT: '↺ 左轉',
       RIGHT: '↻ 右轉',
-      REPEAT2: '⟳ 重複前一步',
+      REPEAT2: '⟳ 重複×2',
+      REPEAT3: '⟳ 重複×3',
     };
 
     function render(): void {
       if (disposed) return;
       header.innerHTML = `
         <div class="stage-meta">
-          <span class="badge">種子 #${config.seed}</span>
           <span class="badge">${maze.size}×${maze.size} 迷宮（Lv.${staircase.currentLevel}）</span>
+          ${maze.keyPos ? `<span class="badge">${hasKey ? '🗝️ 已取得鑰匙' : '🔒 尚未取得鑰匙'}</span>` : ''}
         </div>
       `;
 
@@ -138,12 +166,14 @@ export const blockMazeGame: GameModule = {
           const key = `${r},${c}`;
           const isWall = maze.walls.has(key);
           const isGoal = r === maze.goal[0] && c === maze.goal[1];
+          const isKeyTile = maze.keyPos !== null && !hasKey && r === maze.keyPos[0] && c === maze.keyPos[1];
           const isBot = r === botPos[0] && c === botPos[1];
           const isCrash = collisionKey === key;
+          const isVisited = visited.has(key) && !isBot;
           const arrow = ['▲', '▶', '▼', '◀'][botDir];
           cells.push(`
-            <div class="maze-cell ${isWall ? 'is-wall' : ''} ${isGoal ? 'is-goal' : ''} ${isCrash ? 'is-crash' : ''}">
-              ${isBot ? `<span class="bot-icon">${arrow}</span>` : isGoal ? '🏁' : isWall ? '🧱' : ''}
+            <div class="maze-cell ${isWall ? 'is-wall' : ''} ${isGoal ? 'is-goal' : ''} ${isCrash ? 'is-crash' : ''} ${isVisited ? 'is-visited' : ''}">
+              ${isBot ? `<span class="bot-icon">${arrow}</span>` : isGoal ? (hasKey ? '🏁' : '🚪') : isKeyTile ? '🗝️' : isWall ? '🧱' : isVisited ? '·' : ''}
             </div>
           `);
         }
@@ -161,7 +191,7 @@ export const blockMazeGame: GameModule = {
           : program
               .map(
                 (cmd, i) =>
-                  `<button type="button" class="cmd-chip" data-idx="${i}" title="點擊移除">${CMD_LABELS[cmd]} ✕</button>`,
+                  `<button type="button" class="cmd-chip ${failingChipIdx === i ? 'is-error-chip' : ''}" data-idx="${i}" title="點擊移除">${i + 1}. ${CMD_LABELS[cmd]} ✕</button>`,
               )
               .join('');
 
@@ -170,6 +200,7 @@ export const blockMazeGame: GameModule = {
           e.preventDefault();
           if (running) return;
           program.splice(Number(btn.dataset.idx), 1);
+          failingChipIdx = null;
           render();
         });
       });
@@ -178,7 +209,8 @@ export const blockMazeGame: GameModule = {
         <button type="button" class="btn btn-outline cmd-add" data-cmd="FWD">⬆ 前進</button>
         <button type="button" class="btn btn-outline cmd-add" data-cmd="LEFT">↺ 左轉</button>
         <button type="button" class="btn btn-outline cmd-add" data-cmd="RIGHT">↻ 右轉</button>
-        <button type="button" class="btn btn-outline cmd-add" data-cmd="REPEAT2">⟳ 重複前一步</button>
+        <button type="button" class="btn btn-outline cmd-add" data-cmd="REPEAT2">⟳ 重複×2</button>
+        <button type="button" class="btn btn-outline cmd-add" data-cmd="REPEAT3">⟳ 重複×3</button>
         <button type="button" class="btn btn-primary" id="btn-run-maze">▶ 執行程式</button>
         <button type="button" class="btn btn-outline" id="btn-reset-maze">↺ 重置</button>
       `;
@@ -186,8 +218,9 @@ export const blockMazeGame: GameModule = {
       paletteHost.querySelectorAll<HTMLButtonElement>('.cmd-add').forEach((btn) => {
         btn.addEventListener('pointerdown', (e) => {
           e.preventDefault();
-          if (running || program.length >= 14) return;
+          if (running || program.length >= 16) return;
           audioGateway.unlock();
+          failingChipIdx = null;
           program.push(btn.dataset.cmd as MazeCmd);
           render();
         });
@@ -198,7 +231,10 @@ export const blockMazeGame: GameModule = {
         if (running) return;
         botPos = [...maze.start];
         botDir = maze.dir;
+        hasKey = maze.keyPos === null;
+        visited = new Set<string>([`${maze.start[0]},${maze.start[1]}`]);
         collisionKey = null;
+        failingChipIdx = null;
         render();
       });
 
@@ -213,42 +249,57 @@ export const blockMazeGame: GameModule = {
       audioGateway.unlock();
       botPos = [...maze.start];
       botDir = maze.dir;
+      hasKey = maze.keyPos === null;
+      visited = new Set<string>([`${maze.start[0]},${maze.start[1]}`]);
       collisionKey = null;
+      failingChipIdx = null;
 
-      const steps = expandCommands(program);
+      const steps = expandCommandsWithSource(program);
       const rtMs = Math.round(performance.now() - lastActionMs);
       lastActionMs = performance.now();
 
       for (let i = 0; i < steps.length; i++) {
         if (disposed) return;
         visualTimer.setProgress((i + 1) / steps.length);
-        const step = steps[i];
+        const { cmd, sourceIdx } = steps[i];
 
-        if (step === 'LEFT') {
+        if (cmd === 'LEFT') {
           botDir = (botDir + 3) % 4;
-        } else if (step === 'RIGHT') {
+        } else if (cmd === 'RIGHT') {
           botDir = (botDir + 1) % 4;
         } else {
           const nr = botPos[0] + DIRS[botDir][0];
           const nc = botPos[1] + DIRS[botDir][1];
           if (nr < 0 || nr >= maze.size || nc < 0 || nc >= maze.size || maze.walls.has(`${nr},${nc}`)) {
             collisionKey = `${botPos[0]},${botPos[1]}`;
+            failingChipIdx = sourceIdx;
             audioGateway.playTone('gentle');
             trials.push({ isTarget: true, correct: false, rtMs, errorType: 'rule' });
-            statusLine.textContent = `第 ${i + 1} 步撞到邊界或牆壁囉！調整積木再試一次`;
+            statusLine.textContent = `第 ${sourceIdx + 1} 塊積木撞到邊界或牆壁囉！已標紅該積木方便除錯`;
             running = false;
             render();
             return;
           }
           botPos = [nr, nc];
+          visited.add(`${nr},${nc}`);
+          if (maze.keyPos && nr === maze.keyPos[0] && nc === maze.keyPos[1]) {
+            hasKey = true;
+            audioGateway.playPentatonic(2);
+          }
         }
 
         render();
-        await new Promise((res) => window.setTimeout(res, 240));
+        await new Promise((res) => window.setTimeout(res, 210));
       }
 
       running = false;
       if (botPos[0] === maze.goal[0] && botPos[1] === maze.goal[1]) {
+        if (!hasKey) {
+          audioGateway.playTone('gentle');
+          trials.push({ isTarget: true, correct: false, rtMs, errorType: 'rule' });
+          statusLine.textContent = '門還沒開喔！要先經過 🗝️ 鑰匙再走到終點 🚪';
+          return;
+        }
         audioGateway.playTone('complete');
         trials.push({ isTarget: true, correct: true, rtMs, errorType: 'none' });
         staircase.record(true);
@@ -267,12 +318,14 @@ export const blockMazeGame: GameModule = {
       } else {
         audioGateway.playTone('gentle');
         trials.push({ isTarget: true, correct: false, rtMs, errorType: 'rule' });
-        statusLine.textContent = '還沒走到終點 🏁，試著多加幾步或修改轉向！';
+        statusLine.textContent = '還沒走到終點，試著多加幾步或修改轉向！';
       }
     }
 
     render();
-    statusLine.textContent = '組合指令積木，引導箭頭走到終點 🏁';
+    statusLine.textContent = maze.keyPos
+      ? '先收集 🗝️ 鑰匙，再走進終點大門！'
+      : '組合指令積木，引導箭頭走到終點 🏁';
 
     if (config.showTutorial) {
       const svg = `<div style="font-size:1rem;font-weight:600;color:#0072B2;">⬆ 前進 + ↺ 左轉 → ▶ 一次執行並除錯</div>`;

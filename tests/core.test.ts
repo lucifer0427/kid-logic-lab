@@ -9,6 +9,9 @@ import { computeSessionMetrics } from '../src/telemetry/asiCalculator';
 import { buildShareUrl, parseUrlSeed } from '../src/storage/urlSeed';
 import { evalLogicCircuit } from '../src/games/senior/logicGate';
 import { expandCommands } from '../src/games/middle/blockMaze';
+import { generateLightsOutPuzzle, toggleLightsGrid } from '../src/games/middle/lightsOut';
+import { generateZebraPuzzle } from '../src/games/senior/zebraPuzzle';
+import { getDailyQuest } from '../src/storage/engagement';
 
 describe('SeededRng', () => {
   it('produces identical deterministic sequences for the same seed', () => {
@@ -64,14 +67,45 @@ describe('DDA Controllers', () => {
 });
 
 describe('Logic Gate & Block Maze Pure Logic', () => {
-  it('evaluates boolean AND/OR/NOT circuit accurately', () => {
+  it('evaluates boolean AND/OR/XOR/NOT circuit accurately', () => {
     expect(evalLogicCircuit(1, 0, 1, { gate1: 'AND', gate2: 'AND', invertB: true })).toBe(1);
     expect(evalLogicCircuit(1, 1, 1, { gate1: 'AND', gate2: 'AND', invertB: true })).toBe(0);
     expect(evalLogicCircuit(0, 0, 1, { gate1: 'AND', gate2: 'OR', invertB: false })).toBe(1);
+    expect(evalLogicCircuit(1, 1, 0, { gate1: 'XOR', gate2: 'OR', invertB: false })).toBe(0);
+    expect(evalLogicCircuit(1, 0, 0, { gate1: 'XOR', gate2: 'OR', invertB: false })).toBe(1);
   });
 
-  it('expands REPEAT2 block commands accurately', () => {
-    expect(expandCommands(['FWD', 'REPEAT2', 'LEFT', 'FWD'])).toEqual(['FWD', 'FWD', 'LEFT', 'FWD']);
+  it('expands REPEAT2 and REPEAT3 block commands accurately', () => {
+    expect(expandCommands(['FWD', 'REPEAT2', 'LEFT', 'REPEAT3'])).toEqual([
+      'FWD',
+      'FWD',
+      'LEFT',
+      'LEFT',
+      'LEFT',
+    ]);
+  });
+});
+
+describe('Lights Out, Zebra Puzzle & Daily Quest', () => {
+  it('Lights Out toggle is self-inverting and deterministic', () => {
+    const p = generateLightsOutPuzzle(12345, 1);
+    const toggled = toggleLightsGrid(p.grid, p.size, 4);
+    const restored = toggleLightsGrid(toggled, p.size, 4);
+    expect(restored).toEqual(p.grid);
+  });
+
+  it('Zebra Puzzle generates deterministic valid clues', () => {
+    const z1 = generateZebraPuzzle(999);
+    const z2 = generateZebraPuzzle(999);
+    expect(z1).toEqual(z2);
+    expect(z1.clues).toHaveLength(3);
+  });
+
+  it('Daily Quest produces 3 deterministic games per age tier', () => {
+    const q1 = getDailyQuest('junior', '20261126');
+    const q2 = getDailyQuest('junior', '20261126');
+    expect(q1).toEqual(q2);
+    expect(q1.games).toHaveLength(3);
   });
 });
 

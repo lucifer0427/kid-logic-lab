@@ -5,13 +5,19 @@ import { VisualTimer } from '../../ui/components/VisualTimer';
 import { createTutorialOverlay } from '../../ui/components/TutorialOverlay';
 import { computeSessionMetrics } from '../../telemetry/asiCalculator';
 
-export type GateKind = 'AND' | 'OR';
+export type GateKind = 'AND' | 'OR' | 'XOR';
 
 export interface LogicGatePuzzle {
   gate1: GateKind;
   gate2: GateKind;
   invertB: boolean;
   targetOutput: 0 | 1;
+}
+
+function evalGate(kind: GateKind, x: number, y: number): number {
+  if (kind === 'AND') return x & y;
+  if (kind === 'OR') return x | y;
+  return x ^ y;
 }
 
 export function evalLogicCircuit(
@@ -21,8 +27,8 @@ export function evalLogicCircuit(
   spec: Omit<LogicGatePuzzle, 'targetOutput'>,
 ): 0 | 1 {
   const bVal = spec.invertB ? (b === 1 ? 0 : 1) : b;
-  const mid = spec.gate1 === 'AND' ? (a & bVal) : (a | bVal);
-  const out = spec.gate2 === 'AND' ? (mid & c) : (mid | c);
+  const mid = evalGate(spec.gate1, a, bVal);
+  const out = evalGate(spec.gate2, mid, c);
   return (out ? 1 : 0) as 0 | 1;
 }
 
@@ -89,8 +95,9 @@ export const logicGateGame: GameModule = {
       }
 
       visualTimer.setProgress(round / TOTAL_ROUNDS);
-      const gate1: GateKind = rng.next() < 0.5 ? 'AND' : 'OR';
-      const gate2: GateKind = rng.next() < 0.5 ? 'AND' : 'OR';
+      const gatePool: GateKind[] = config.level >= 2 || round >= 2 ? ['AND', 'OR', 'XOR'] : ['AND', 'OR'];
+      const gate1: GateKind = gatePool[rng.int(0, gatePool.length - 1)];
+      const gate2: GateKind = gatePool[rng.int(0, gatePool.length - 1)];
       const invertB = config.level >= 2 || round >= 2 ? rng.next() < 0.6 : false;
       const targetOutput: 0 | 1 = rng.next() < 0.7 ? 1 : 0;
       puzzle = { gate1, gate2, invertB, targetOutput };
@@ -113,11 +120,12 @@ export const logicGateGame: GameModule = {
     function render(): void {
       if (disposed) return;
       const bAfterNot = puzzle.invertB ? (b === 1 ? 0 : 1) : b;
-      const mid = puzzle.gate1 === 'AND' ? (a & bAfterNot) : (a | bAfterNot);
+      const mid = evalGate(puzzle.gate1, a, bAfterNot);
       const out = evalLogicCircuit(a, b, c, puzzle);
 
       // Okabe-Ito Blue (#0072B2) = 1 (ON), Slate (#94A3B8) = 0 (OFF) — never red/green!
       const wireColor = (val: number) => (val === 1 ? '#0072B2' : '#94A3B8');
+      const gateColor = (g: GateKind) => (g === 'AND' ? '#0072B2' : g === 'OR' ? '#E69F00' : '#009E73');
 
       header.innerHTML = `
         <div class="stage-meta">
@@ -153,11 +161,11 @@ export const logicGateGame: GameModule = {
           <text x="48" y="170" text-anchor="middle" font-size="13" font-weight="700" fill="#FFF">C:${c}</text>
 
           <!-- Gate 1 -->
-          <rect x="170" y="52" width="66" height="56" rx="10" fill="${puzzle.gate1 === 'AND' ? '#0072B2' : '#E69F00'}" stroke="#0F172A" stroke-width="2"/>
+          <rect x="170" y="52" width="66" height="56" rx="10" fill="${gateColor(puzzle.gate1)}" stroke="#0F172A" stroke-width="2"/>
           <text x="203" y="85" text-anchor="middle" font-size="14" font-weight="700" fill="#FFF">${puzzle.gate1}</text>
 
           <!-- Gate 2 -->
-          <rect x="295" y="97" width="66" height="56" rx="10" fill="${puzzle.gate2 === 'AND' ? '#0072B2' : '#E69F00'}" stroke="#0F172A" stroke-width="2"/>
+          <rect x="295" y="97" width="66" height="56" rx="10" fill="${gateColor(puzzle.gate2)}" stroke="#0F172A" stroke-width="2"/>
           <text x="328" y="130" text-anchor="middle" font-size="14" font-weight="700" fill="#FFF">${puzzle.gate2}</text>
 
           <!-- Output Bulb -->

@@ -80,6 +80,27 @@ class AudioGateway {
       osc.stop(now + 0.45);
     }
   }
+
+  /**
+   * Gentle pentatonic marimba chime (C5-D5-E5-G5-A5-C6)
+   * Pitch rises softly with consecutive accurate streak to support flow without harshness.
+   */
+  playPentatonic(streakIndex: number): void {
+    if (this.muted || !this.ctx || this.ctx.state !== 'running') return;
+    const scale = [523.25, 587.33, 659.25, 783.99, 880.0, 1046.5];
+    const freq = scale[Math.max(0, streakIndex) % scale.length];
+    const now = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(freq, now);
+    gain.gain.setValueAtTime(0.09, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.24);
+    osc.start(now);
+    osc.stop(now + 0.25);
+  }
 }
 
 export const audioGateway = new AudioGateway();

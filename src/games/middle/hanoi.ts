@@ -19,10 +19,10 @@ export const hanoiGame: GameModule = {
     const staircase = new StaircaseController({
       initialLevel: config.level,
       minLevel: 1,
-      maxLevel: 2, // Level 1 = 3 discs, Level 2 = 4 discs
+      maxLevel: 3, // Level 1 = 3 discs, Level 2 = 4 discs, Level 3 = 5 discs
     });
 
-    let discCount = staircase.currentLevel === 1 ? 3 : 4;
+    let discCount = staircase.currentLevel + 2;
     let optimalMoves = 2 ** discCount - 1;
     let pegs: number[][] = [[], [], []];
     let selectedPeg: number | null = null;
@@ -32,7 +32,7 @@ export const hanoiGame: GameModule = {
     let disposed = false;
 
     function resetBoard(): void {
-      discCount = staircase.currentLevel === 1 ? 3 : 4;
+      discCount = staircase.currentLevel + 2;
       optimalMoves = 2 ** discCount - 1;
       pegs = [
         Array.from({ length: discCount }, (_, i) => discCount - i),

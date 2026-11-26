@@ -1,21 +1,32 @@
 import './style.css';
-import { AgeTier, GameId, GameModule, SessionRecord } from './engine/types';
+import { AgeTier, GameId, GameModule, SessionRecord, ThemeSkin } from './engine/types';
 import { goNoGoGame } from './games/junior/goNoGo';
 import { latinSquareGame } from './games/junior/latinSquare';
 import { dccsMazeGame } from './games/junior/dccsMaze';
 import { schulteGame } from './games/junior/schulte';
+import { fireflyMemoryGame } from './games/junior/fireflyMemory';
 import { hanoiGame } from './games/middle/hanoi';
 import { spatialConflictGame } from './games/middle/spatialConflict';
 import { matrixPatternGame } from './games/middle/matrixPattern';
 import { blockMazeGame } from './games/middle/blockMaze';
+import { lightsOutGame } from './games/middle/lightsOut';
 import { nbackGame } from './games/senior/nback';
 import { logicGateGame } from './games/senior/logicGate';
 import { sudoku6x6Game } from './games/senior/sudoku6x6';
 import { sudoku9x9Game } from './games/senior/sudoku9x9';
 import { dualMatrixGame } from './games/senior/dualMatrix';
+import { zebraPuzzleGame } from './games/senior/zebraPuzzle';
 import { loadPrefs, savePrefs } from './storage/prefs';
 import { saveSession } from './storage/db';
 import { buildShareUrl, parseUrlSeed } from './storage/urlSeed';
+import {
+  BadgeDef,
+  MILESTONE_BADGES,
+  getDailyQuest,
+  getTodayKey,
+  loadEngagement,
+  recordSessionEngagement,
+} from './storage/engagement';
 import { audioGateway } from './ui/audio/unlock';
 import { showQrModal } from './ui/components/QrModal';
 import { renderDashboard } from './dashboard/radarView';
@@ -25,21 +36,30 @@ const GAMES: Record<GameId, GameModule> = {
   latinSquare: latinSquareGame,
   dccsMaze: dccsMazeGame,
   schulte: schulteGame,
+  fireflyMemory: fireflyMemoryGame,
   hanoi: hanoiGame,
   spatialConflict: spatialConflictGame,
   matrixPattern: matrixPatternGame,
   blockMaze: blockMazeGame,
+  lightsOut: lightsOutGame,
   nback: nbackGame,
   logicGate: logicGateGame,
   sudoku6x6: sudoku6x6Game,
   sudoku9x9: sudoku9x9Game,
   dualMatrix: dualMatrixGame,
+  zebraPuzzle: zebraPuzzleGame,
 };
 
 const AGE_TIERS: { id: AgeTier; label: string }[] = [
   { id: 'junior', label: '低年級（6–8 歲）' },
   { id: 'middle', label: '中年級（8–10 歲）' },
   { id: 'senior', label: '高年級（10–12 歲）' },
+];
+
+const THEME_SKINS: { id: ThemeSkin; label: string }[] = [
+  { id: 'geometry', label: '🔷 幾何實驗室' },
+  { id: 'space', label: '🚀 太空星際' },
+  { id: 'forest', label: '🐞 森林昆蟲' },
 ];
 
 const appEl = document.getElementById('app')!;
@@ -107,12 +127,41 @@ function renderHome(): void {
   const main = document.createElement('main');
   main.className = 'home-main';
 
+  const todayKey = getTodayKey();
+  const daily = getDailyQuest(prefs.ageTier, todayKey);
+  const eng = loadEngagement();
+  const doneToday = eng.dailyCompleted[todayKey] ?? [];
+  const dailyDoneCount = daily.games.filter((g) => doneToday.includes(g)).length;
+
+  const dailyCardsHtml = daily.games
+    .map((gId, idx) => {
+      const g = GAMES[gId];
+      const isDone = doneToday.includes(gId);
+      return `
+        <button type="button" class="daily-quest-item ${isDone ? 'is-done' : ''}" data-game="${gId}">
+          <span class="quest-step">${isDone ? '✅' : `第 ${idx + 1} 關`}</span>
+          <strong>${g.title}</strong>
+        </button>
+      `;
+    })
+    .join('');
+
   const tierTabs = AGE_TIERS.map(
     (t) => `
       <button type="button"
         class="tier-tab ${prefs.ageTier === t.id ? 'is-active' : ''}"
         data-tier="${t.id}">
         ${t.label}
+      </button>
+    `,
+  ).join('');
+
+  const skinButtons = THEME_SKINS.map(
+    (s) => `
+      <button type="button"
+        class="btn ${prefs.themeSkin === s.id ? 'btn-primary' : 'btn-outline'} skin-btn"
+        data-skin="${s.id}">
+        ${s.label}
       </button>
     `,
   ).join('');
@@ -139,19 +188,73 @@ function renderHome(): void {
     )
     .join('');
 
+  const earnedSet = new Set(eng.unlockedBadges);
+  const badgesHtml = MILESTONE_BADGES.map((b) => {
+    const unlocked = earnedSet.has(b.id);
+    return `
+      <div class="badge-tile ${unlocked ? 'is-unlocked' : 'is-locked'}" title="${b.desc}">
+        <span class="badge-icon">${unlocked ? b.icon : '🔒'}</span>
+        <strong>${b.title}</strong>
+        <span class="badge-desc">${b.desc}</span>
+      </div>
+    `;
+  }).join('');
+
   main.innerHTML = `
-    <section class="tier-nav" aria-label="學齡分層選擇">${tierTabs}</section>
+    <section class="card daily-banner">
+      <div class="daily-banner-top">
+        <div>
+          <h2 style="margin:0;">🧭 今日大腦探險（${dailyDoneCount} / 3）</h2>
+          <p class="muted" style="margin:4px 0 0;">
+            ${
+              dailyDoneCount >= 3
+                ? '太棒了！今日鍛鍊已達成，起來看看遠方、喝口水休息一下吧！'
+                : '每天完成 3 個小探險，全班同學的今日挑戰題目都一樣喔！'
+            }
+          </p>
+        </div>
+      </div>
+      <div class="daily-quest-row">${dailyCardsHtml}</div>
+    </section>
+
+    <section class="home-controls-row">
+      <div class="tier-nav" aria-label="學齡分層選擇">${tierTabs}</div>
+      <div class="skin-nav" aria-label="圖形主題切換">${skinButtons}</div>
+    </section>
+
     <section class="game-grid">${cardsHtml}</section>
+
+    <section class="card">
+      <h3 style="margin:0;">🏅 實驗室里程碑徽章（已解鎖 ${earnedSet.size} / ${MILESTONE_BADGES.length}）</h3>
+      <div class="badges-grid">${badgesHtml}</div>
+    </section>
+
     <section class="info-banner">
-      <p><strong>設計原則：</strong>採用 Okabe-Ito 色覺友善配色、視覺進度條與程序化唯一解生成，無廣告、無倒數焦慮、無個人資料收集。</p>
+      <p><strong>設計原則：</strong>採用 Okabe-Ito 色覺友善配色、視覺進度條與程序化唯一解生成，無抽卡、無倒數焦慮、無個人資料收集。</p>
     </section>
   `;
 
   appEl.appendChild(main);
 
+  main.querySelectorAll<HTMLButtonElement>('.daily-quest-item').forEach((btn) => {
+    btn.addEventListener('pointerdown', () => {
+      audioGateway.unlock();
+      const gameId = btn.dataset.game as GameId;
+      launchGame(gameId, daily.seed, prefs.levels[gameId] ?? 1, false);
+    });
+  });
+
   main.querySelectorAll<HTMLButtonElement>('.tier-tab').forEach((btn) => {
     btn.addEventListener('pointerdown', () => {
       prefs.ageTier = btn.dataset.tier as AgeTier;
+      savePrefs(prefs);
+      renderHome();
+    });
+  });
+
+  main.querySelectorAll<HTMLButtonElement>('.skin-btn').forEach((btn) => {
+    btn.addEventListener('pointerdown', () => {
+      prefs.themeSkin = btn.dataset.skin as ThemeSkin;
       savePrefs(prefs);
       renderHome();
     });
@@ -213,6 +316,7 @@ function launchGame(gameId: GameId, seed: number, level: number, showTutorial: b
     seed,
     level,
     showTutorial,
+    themeSkin: prefs.themeSkin,
     onExit: renderHome,
     onSessionComplete: (summary) => {
       const record: SessionRecord = {
@@ -223,44 +327,90 @@ function launchGame(gameId: GameId, seed: number, level: number, showTutorial: b
       void saveSession(record);
       prefs.levels[summary.gameId] = summary.level;
       savePrefs(prefs);
-      renderSessionSummary(stageHost, game, record);
+      const { newlyUnlocked } = recordSessionEngagement(summary);
+      renderSessionSummary(stageHost, game, record, newlyUnlocked);
     },
   });
 }
 
-function renderSessionSummary(host: HTMLElement, game: GameModule, record: SessionRecord): void {
+function getKidHeadline(asi: number, accuracy: number): { emoji: string; title: string; msg: string } {
+  if (asi >= 85 && accuracy >= 0.9) {
+    return { emoji: '🌟', title: '太穩了！專注力像雷射一樣！', msg: '你的節奏非常穩定，而且幾乎沒有失誤！' };
+  }
+  if (accuracy >= 0.75) {
+    return { emoji: '👏', title: '表現很棒！完成這次挑戰！', msg: '穩穩地思考、不急著亂按，大腦越來越靈活了！' };
+  }
+  return { emoji: '💪', title: '勇敢完成練習！', msg: '每一次思考都是大腦在長肌肉，再試一次會更順手喔！' };
+}
+
+function renderSessionSummary(
+  host: HTMLElement,
+  game: GameModule,
+  record: SessionRecord,
+  newlyUnlocked: BadgeDef[],
+): void {
   unmountCurrent();
-  host.innerHTML = `
-    <div class="summary-card">
-      <h2>練習完成！</h2>
-      <p class="muted">${game.title}（種子 #${record.seed}）</p>
-      <div class="summary-metrics">
-        <div class="metric-box">
-          <span class="metric-label">專注穩定度 (ASI)</span>
-          <strong class="metric-value">${record.metrics.asi}</strong>
+  const kid = getKidHeadline(record.metrics.asi, record.metrics.accuracy);
+
+  const newBadgeHtml =
+    newlyUnlocked.length > 0
+      ? `
+      <div class="new-badges-banner">
+        <strong>🎉 解鎖新徽章！</strong>
+        <div class="new-badges-list">
+          ${newlyUnlocked.map((b) => `<span class="badge">${b.icon} ${b.title}</span>`).join('')}
         </div>
+      </div>`
+      : '';
+
+  host.innerHTML = `
+    <div class="summary-card pop-soft">
+      <div style="font-size:2.4rem;">${kid.emoji}</div>
+      <h2 style="margin:0;">${kid.title}</h2>
+      <p class="muted" style="margin:0;">${kid.msg}</p>
+      ${newBadgeHtml}
+      <div class="summary-kid-bars">
         <div class="metric-box">
-          <span class="metric-label">正確率</span>
+          <span class="metric-label">本局表現正確率</span>
           <strong class="metric-value">${Math.round(record.metrics.accuracy * 100)}%</strong>
         </div>
         <div class="metric-box">
-          <span class="metric-label">平均反應時間</span>
-          <strong class="metric-value">${record.metrics.meanRtMs} ms</strong>
-        </div>
-        <div class="metric-box">
-          <span class="metric-label">反應變異係數 (CV_RT)</span>
-          <strong class="metric-value">${record.metrics.cvRt}</strong>
+          <span class="metric-label">目前挑戰階梯</span>
+          <strong class="metric-value">Lv.${record.level}</strong>
         </div>
       </div>
+
+      <details class="teacher-metrics-details">
+        <summary>師長檢視詳細認知指標（ASI / CV_RT）</summary>
+        <div class="summary-metrics" style="margin-top:10px;">
+          <div class="metric-box">
+            <span class="metric-label">專注穩定度 (ASI)</span>
+            <strong class="metric-value">${record.metrics.asi}</strong>
+          </div>
+          <div class="metric-box">
+            <span class="metric-label">平均反應時間</span>
+            <strong class="metric-value">${record.metrics.meanRtMs} ms</strong>
+          </div>
+          <div class="metric-box">
+            <span class="metric-label">反應變異係數 (CV_RT)</span>
+            <strong class="metric-value">${record.metrics.cvRt}</strong>
+          </div>
+        </div>
+      </details>
+
       <div class="summary-actions">
-        <button type="button" class="btn btn-primary btn-lg" id="btn-replay">再玩一局（新題目）</button>
+        <button type="button" class="btn btn-primary btn-lg" id="btn-replay-new">再玩一局（新題目）</button>
+        <button type="button" class="btn btn-outline btn-lg" id="btn-replay-same">再試同一題</button>
         <button type="button" class="btn btn-outline btn-lg" id="btn-home">返回首頁</button>
       </div>
     </div>
   `;
 
-  host.querySelector('#btn-replay')?.addEventListener('pointerdown', () => {
+  host.querySelector('#btn-replay-new')?.addEventListener('pointerdown', () => {
     launchGame(game.id, generateFreshSeed(), record.level, false);
+  });
+  host.querySelector('#btn-replay-same')?.addEventListener('pointerdown', () => {
+    launchGame(game.id, record.seed, record.level, false);
   });
   host.querySelector('#btn-home')?.addEventListener('pointerdown', renderHome);
 }

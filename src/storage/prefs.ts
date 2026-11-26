@@ -1,8 +1,9 @@
-import { ALL_GAME_IDS, AgeTier, GameId } from '../engine/types';
+import { ALL_GAME_IDS, AgeTier, GameId, ThemeSkin } from '../engine/types';
 
 export interface UserPrefs {
   muted: boolean;
   ageTier: AgeTier;
+  themeSkin: ThemeSkin;
   levels: Record<GameId, number>;
 }
 
@@ -20,6 +21,7 @@ export function loadPrefs(): UserPrefs {
   const defaults: UserPrefs = {
     muted: false,
     ageTier: 'junior',
+    themeSkin: 'geometry',
     levels: defaultLevels(),
   };
 
@@ -30,6 +32,7 @@ export function loadPrefs(): UserPrefs {
     return {
       muted: Boolean(parsed.muted),
       ageTier: parsed.ageTier ?? defaults.ageTier,
+      themeSkin: parsed.themeSkin ?? defaults.themeSkin,
       levels: {
         ...defaults.levels,
         ...(parsed.levels ?? {}),

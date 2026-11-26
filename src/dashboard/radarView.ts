@@ -83,9 +83,55 @@ function renderRadarSvg(scores: Record<CognitiveAxis, number>): string {
   `;
 }
 
+function renderTrendSvg(sessions: SessionRecord[]): string {
+  const recent = [...sessions].slice(-15);
+  if (recent.length < 2) {
+    return '<p class="muted">累積至少 2 次練習後即可顯示 ASI 進步趨勢折線圖。</p>';
+  }
+
+  const w = 360;
+  const h = 160;
+  const padL = 32;
+  const padR = 14;
+  const padT = 16;
+  const padB = 24;
+  const innerW = w - padL - padR;
+  const innerH = h - padT - padB;
+
+  const toX = (i: number) => padL + (i / (recent.length - 1)) * innerW;
+  const toY = (val: number) => padT + innerH - (Math.max(0, Math.min(100, val)) / 100) * innerH;
+
+  const asiPts = recent.map((s, i) => `${toX(i).toFixed(1)},${toY(s.metrics.asi).toFixed(1)}`).join(' ');
+  const accPts = recent.map((s, i) => `${toX(i).toFixed(1)},${toY(s.metrics.accuracy * 100).toFixed(1)}`).join(' ');
+
+  const dots = recent
+    .map(
+      (s, i) =>
+        `<circle cx="${toX(i).toFixed(1)}" cy="${toY(s.metrics.asi).toFixed(1)}" r="3.5" fill="#0072B2"/>`,
+    )
+    .join('');
+
+  return `
+    <svg viewBox="0 0 ${w} ${h}" class="trend-svg" aria-label="ASI 與正確率趨勢折線圖">
+      <line x1="${padL}" y1="${padT}" x2="${padL}" y2="${padT + innerH}" stroke="#CBD5E1" stroke-width="1"/>
+      <line x1="${padL}" y1="${padT + innerH}" x2="${padL + innerW}" y2="${padT + innerH}" stroke="#CBD5E1" stroke-width="1"/>
+      <text x="4" y="${padT + 4}" font-size="10" fill="#64748B">100</text>
+      <text x="10" y="${padT + innerH}" font-size="10" fill="#64748B">0</text>
+      <polyline points="${accPts}" fill="none" stroke="#009E73" stroke-width="2" stroke-dasharray="4 3"/>
+      <polyline points="${asiPts}" fill="none" stroke="#0072B2" stroke-width="2.5"/>
+      ${dots}
+    </svg>
+    <div style="display:flex;gap:14px;justify-content:center;font-size:0.8rem;">
+      <span style="color:#0072B2;font-weight:600;">● 專注穩定度 (ASI)</span>
+      <span style="color:#009E73;font-weight:600;">┈ 正確率 (%)</span>
+    </div>
+  `;
+}
+
 export async function renderDashboard(container: HTMLElement, onBack: () => void): Promise<void> {
   const sessions = await getAllSessions();
   const sorted = [...sessions].sort((a, b) => b.timestamp - a.timestamp);
+  const chronological = [...sessions].sort((a, b) => a.timestamp - b.timestamp);
   const averages = computeRadarAverages(sorted);
 
   const recentRows = sorted.slice(0, 10)
@@ -123,6 +169,10 @@ export async function renderDashboard(container: HTMLElement, onBack: () => void
         <div class="card">
           <h3>五軸認知表現總覽（累積 ${sorted.length} 次）</h3>
           ${renderRadarSvg(averages)}
+        </div>
+        <div class="card">
+          <h3>近期 ASI 與正確率趨勢（近 15 次）</h3>
+          ${renderTrendSvg(chronological)}
         </div>
         <div class="card">
           <h3>單機資料備份與管理</h3>

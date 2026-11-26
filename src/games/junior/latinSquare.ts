@@ -2,7 +2,7 @@ import { GameLaunchConfig, GameModule, TrialRecord } from '../../engine/types';
 import { StaircaseController } from '../../engine/dda/staircase';
 import { requestLatinSquare } from '../../worker/client';
 import { LatinSquarePuzzle } from '../../worker/solvers/latinSquare';
-import { OKABE_ITO_PALETTE, renderTokenSvg } from '../../ui/theme/okabeIto';
+import { OKABE_ITO_PALETTE, renderThemedTokenSvg, renderTokenSvg } from '../../ui/theme/okabeIto';
 import { audioGateway } from '../../ui/audio/unlock';
 import { VisualTimer } from '../../ui/components/VisualTimer';
 import { createTutorialOverlay } from '../../ui/components/TutorialOverlay';
@@ -83,6 +83,7 @@ export const latinSquareGame: GameModule = {
       const filled = grid.filter((v, i) => !fixed[i] && v !== 0 && !hasConflict(i, v)).length;
       visualTimer.setProgress(totalBlanks > 0 ? filled / totalBlanks : 1);
 
+      const skin = config.themeSkin ?? 'geometry';
       const cells = grid
         .map((val, idx) => {
           const isFixed = fixed[idx];
@@ -94,7 +95,7 @@ export const latinSquareGame: GameModule = {
               class="latin-cell ${isFixed ? 'is-fixed' : ''} ${isSelected ? 'is-selected' : ''} ${conflict ? 'is-conflict' : ''}"
               data-idx="${idx}"
               aria-label="${token ? token.nameZh : '空格'}">
-              ${token ? renderTokenSvg(token, 42) : ''}
+              ${token ? renderThemedTokenSvg(val - 1, skin, 42) : ''}
             </button>
           `;
         })
@@ -122,12 +123,13 @@ export const latinSquareGame: GameModule = {
         const token = OKABE_ITO_PALETTE[i];
         return `
           <button type="button" class="btn btn-outline token-pick-btn" data-val="${i + 1}" aria-label="填入${token.nameZh}">
-            ${renderTokenSvg(token, 34)}
+            ${renderThemedTokenSvg(i, skin, 34)}
           </button>
         `;
       }).join('');
 
       pickerHost.innerHTML = `${tokensHtml}
+        <button type="button" class="btn btn-outline" id="latin-hint">💡 線索</button>
         <button type="button" class="btn btn-outline" id="latin-clear">清除</button>`;
 
       pickerHost.querySelectorAll<HTMLButtonElement>('.token-pick-btn').forEach((btn) => {
@@ -135,6 +137,24 @@ export const latinSquareGame: GameModule = {
           e.preventDefault();
           applyValue(Number(btn.dataset.val));
         });
+      });
+
+      pickerHost.querySelector('#latin-hint')?.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        if (!puzzleData) return;
+        for (let i = 0; i < puzzleData.size * puzzleData.size; i++) {
+          if (grid[i] !== 0) continue;
+          let cands = 0;
+          for (let v = 1; v <= puzzleData.size; v++) {
+            if (!hasConflict(i, v)) cands += 1;
+          }
+          if (cands === 1) {
+            selectedIdx = i;
+            statusLine.textContent = '💡 這一格觀察同行同列後，只剩 1 個圖形可以放喔！';
+            render();
+            return;
+          }
+        }
       });
 
       pickerHost.querySelector('#latin-clear')?.addEventListener('pointerdown', (e) => {

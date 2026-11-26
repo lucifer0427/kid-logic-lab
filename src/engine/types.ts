@@ -1,34 +1,42 @@
 export type AgeTier = 'junior' | 'middle' | 'senior';
 
+export type ThemeSkin = 'geometry' | 'space' | 'forest';
+
 export type GameId =
   | 'gonogo'
   | 'latinSquare'
   | 'dccsMaze'
   | 'schulte'
+  | 'fireflyMemory'
   | 'hanoi'
   | 'spatialConflict'
   | 'matrixPattern'
   | 'blockMaze'
+  | 'lightsOut'
   | 'nback'
   | 'logicGate'
   | 'sudoku6x6'
   | 'sudoku9x9'
-  | 'dualMatrix';
+  | 'dualMatrix'
+  | 'zebraPuzzle';
 
 export const ALL_GAME_IDS: readonly GameId[] = [
   'gonogo',
   'latinSquare',
   'dccsMaze',
   'schulte',
+  'fireflyMemory',
   'hanoi',
   'spatialConflict',
   'matrixPattern',
   'blockMaze',
+  'lightsOut',
   'nback',
   'logicGate',
   'sudoku6x6',
   'sudoku9x9',
   'dualMatrix',
+  'zebraPuzzle',
 ] as const;
 
 export type CognitiveAxis =
@@ -77,6 +85,7 @@ export interface GameLaunchConfig {
   seed: number;
   level: number;
   showTutorial: boolean;
+  themeSkin?: ThemeSkin;
   onSessionComplete: (record: Omit<SessionRecord, 'id' | 'timestamp'>) => void;
   onExit: () => void;
 }
