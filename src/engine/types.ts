@@ -8,17 +8,26 @@ export type GameId =
   | 'dccsMaze'
   | 'schulte'
   | 'fireflyMemory'
+  | 'conjunctionSearch'
+  | 'symmetryGrid'
+  | 'mastermind'
   | 'hanoi'
   | 'spatialConflict'
   | 'matrixPattern'
   | 'blockMaze'
   | 'lightsOut'
+  | 'sokoban'
+  | 'minesweeper'
+  | 'balanceScale'
   | 'nback'
   | 'logicGate'
   | 'sudoku6x6'
   | 'sudoku9x9'
   | 'dualMatrix'
-  | 'zebraPuzzle';
+  | 'zebraPuzzle'
+  | 'nonogram'
+  | 'binaryPuzzle'
+  | 'target24';
 
 export const ALL_GAME_IDS: readonly GameId[] = [
   'gonogo',
@@ -26,17 +35,26 @@ export const ALL_GAME_IDS: readonly GameId[] = [
   'dccsMaze',
   'schulte',
   'fireflyMemory',
+  'conjunctionSearch',
+  'symmetryGrid',
+  'mastermind',
   'hanoi',
   'spatialConflict',
   'matrixPattern',
   'blockMaze',
   'lightsOut',
+  'sokoban',
+  'minesweeper',
+  'balanceScale',
   'nback',
   'logicGate',
   'sudoku6x6',
   'sudoku9x9',
   'dualMatrix',
   'zebraPuzzle',
+  'nonogram',
+  'binaryPuzzle',
+  'target24',
 ] as const;
 
 export type CognitiveAxis =

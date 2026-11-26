@@ -12,6 +12,11 @@ import { expandCommands } from '../src/games/middle/blockMaze';
 import { generateLightsOutPuzzle, toggleLightsGrid } from '../src/games/middle/lightsOut';
 import { generateZebraPuzzle } from '../src/games/senior/zebraPuzzle';
 import { getDailyQuest } from '../src/storage/engagement';
+import { scoreMastermindGuess } from '../src/games/junior/mastermind';
+import { generateBalancePuzzle } from '../src/games/middle/balanceScale';
+import { computeRuns } from '../src/games/senior/nonogram';
+import { isValidTakuzuBoard } from '../src/games/senior/binaryPuzzle';
+import { evaluateArithmeticExpr } from '../src/games/senior/target24';
 
 describe('SeededRng', () => {
   it('produces identical deterministic sequences for the same seed', () => {
@@ -157,5 +162,36 @@ describe('URL Seed Sharing', () => {
     const url = buildShareUrl('https://example.github.io/kid-logic-lab/', 'logicGate', 48291, 2);
     const parsed = parseUrlSeed(new URL(url).search);
     expect(parsed).toEqual({ game: 'logicGate', seed: 48291, lvl: 2 });
+  });
+});
+
+describe('New Games Pure Logic', () => {
+  it('scores Mastermind exact and misplaced matches accurately', () => {
+    expect(scoreMastermindGuess([0, 1, 2], [0, 1, 2])).toEqual({ exact: 3, misplaced: 0 });
+    expect(scoreMastermindGuess([0, 1, 2], [2, 0, 1])).toEqual({ exact: 0, misplaced: 3 });
+    expect(scoreMastermindGuess([0, 0, 1], [0, 1, 3])).toEqual({ exact: 1, misplaced: 1 });
+  });
+
+  it('generates distinct deterministic weights for Balance Scale', () => {
+    const b = generateBalancePuzzle(42, 2);
+    expect(b.useThree).toBe(true);
+    expect(b.wA).not.toBe(b.wB);
+  });
+
+  it('computes Nonogram run-length clues accurately', () => {
+    expect(computeRuns([1, 1, 0, 1, 0])).toEqual([2, 1]);
+    expect(computeRuns([0, 0, 0, 0, 0])).toEqual([0]);
+  });
+
+  it('validates Takuzu 6x6 three-in-a-row rule', () => {
+    const bad = new Array<number>(36).fill(-1);
+    bad[0] = 1; bad[1] = 1; bad[2] = 1;
+    expect(isValidTakuzuBoard(bad)).toBe(false);
+  });
+
+  it('evaluates Target 24 arithmetic expressions safely', () => {
+    expect(evaluateArithmeticExpr('(8-4)*6')).toBe(24);
+    expect(evaluateArithmeticExpr('8/(3-8/3)')).toBeCloseTo(24, 5);
+    expect(evaluateArithmeticExpr('1/0')).toBeNull();
   });
 });

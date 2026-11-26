@@ -985,3 +985,267 @@ body {
 .pop-soft {
   animation: popSoft 0.25s ease-out;
 }
+
+.conjunction-target-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+.conjunction-grid {
+  display: grid;
+  gap: 8px;
+}
+
+.conjunction-cell {
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.sym-split {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sym-half {
+  display: grid;
+  gap: 4px;
+}
+
+.sym-axis {
+  width: 4px;
+  align-self: stretch;
+  background: repeating-linear-gradient(to bottom, #D55E00 0 8px, transparent 8px 14px);
+}
+
+.sym-cell {
+  width: 44px;
+  height: 44px;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  background: #F8FAFC;
+}
+
+.sym-btn {
+  cursor: pointer;
+}
+
+.sym-cell.is-on {
+  background: #0072B2;
+  border-color: #0F172A;
+}
+
+.mm-history {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.mm-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 12px;
+  background: #F8FAFC;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+}
+
+.mm-tokens,
+.mm-draft-slots {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.mm-feedback {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.mm-slot {
+  width: 52px;
+  height: 52px;
+  border: 2px dashed var(--primary);
+  border-radius: 12px;
+  background: #FFFFFF;
+  font-weight: 700;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.sokoban-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.dpad-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 52px);
+  gap: 6px;
+}
+
+.dpad-btn {
+  width: 52px;
+  height: 52px;
+  padding: 0;
+  font-size: 1.2rem;
+}
+
+.mine-grid {
+  display: grid;
+  gap: 4px;
+}
+
+.mine-cell {
+  width: 48px;
+  height: 48px;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  background: #CBD5E1;
+  font-weight: 700;
+  font-size: 1.05rem;
+  cursor: pointer;
+}
+
+.mine-cell.is-rev {
+  background: #FFFFFF;
+  color: #0072B2;
+}
+
+.mine-cell.is-flag {
+  background: #FEF9C3;
+}
+
+.mine-cell.is-mine {
+  background: #FFEDD5;
+}
+
+.scales-host {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+}
+
+.scale-eq {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 16px;
+  background: #F8FAFC;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.scale-pan {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.scales-inputs {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.weight-stepper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #FFFFFF;
+}
+
+.step-btn {
+  min-width: 40px;
+  min-height: 40px;
+  padding: 4px 10px;
+}
+
+.step-val {
+  min-width: 24px;
+  text-align: center;
+  font-size: 1.15rem;
+}
+
+.nono-table {
+  border-collapse: collapse;
+}
+
+.nono-col-clue,
+.nono-row-clue {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--primary);
+  padding: 4px 8px;
+  text-align: center;
+}
+
+.nono-cell {
+  width: 48px;
+  height: 48px;
+  border: 1px solid #94A3B8;
+  background: #FFFFFF;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.nono-cell.is-filled {
+  background: #0072B2;
+}
+
+.nono-cell.is-crossed {
+  background: #F1F5F9;
+  color: #64748B;
+}
+
+.t24-display {
+  width: 100%;
+  padding: 14px 18px;
+  border: 2px solid var(--primary);
+  border-radius: 12px;
+  background: #EFF6FF;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.t24-expr {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.t24-preview {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.t24-num-btn.is-used {
+  opacity: 0.4;
+}

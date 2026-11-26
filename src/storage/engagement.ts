@@ -46,19 +46,19 @@ export function getDailyQuest(ageTier: AgeTier, dateKey = getTodayKey()): DailyQ
 
   const pools: Record<AgeTier, [GameId[], GameId[], GameId[]]> = {
     junior: [
-      ['gonogo', 'dccsMaze'],
-      ['schulte', 'fireflyMemory'],
-      ['latinSquare'],
+      ['gonogo', 'dccsMaze', 'conjunctionSearch'],
+      ['schulte', 'fireflyMemory', 'symmetryGrid'],
+      ['latinSquare', 'mastermind'],
     ],
     middle: [
-      ['spatialConflict'],
-      ['hanoi', 'lightsOut'],
-      ['matrixPattern', 'blockMaze'],
+      ['spatialConflict', 'minesweeper'],
+      ['hanoi', 'lightsOut', 'sokoban'],
+      ['matrixPattern', 'blockMaze', 'balanceScale'],
     ],
     senior: [
-      ['nback'],
-      ['logicGate', 'dualMatrix'],
-      ['sudoku6x6', 'sudoku9x9', 'zebraPuzzle'],
+      ['nback', 'nonogram'],
+      ['logicGate', 'dualMatrix', 'binaryPuzzle'],
+      ['sudoku6x6', 'sudoku9x9', 'zebraPuzzle', 'target24'],
     ],
   };
 

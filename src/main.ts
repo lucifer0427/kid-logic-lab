@@ -5,17 +5,26 @@ import { latinSquareGame } from './games/junior/latinSquare';
 import { dccsMazeGame } from './games/junior/dccsMaze';
 import { schulteGame } from './games/junior/schulte';
 import { fireflyMemoryGame } from './games/junior/fireflyMemory';
+import { conjunctionSearchGame } from './games/junior/conjunctionSearch';
+import { symmetryGridGame } from './games/junior/symmetryGrid';
+import { mastermindGame } from './games/junior/mastermind';
 import { hanoiGame } from './games/middle/hanoi';
 import { spatialConflictGame } from './games/middle/spatialConflict';
 import { matrixPatternGame } from './games/middle/matrixPattern';
 import { blockMazeGame } from './games/middle/blockMaze';
 import { lightsOutGame } from './games/middle/lightsOut';
+import { sokobanGame } from './games/middle/sokoban';
+import { minesweeperGame } from './games/middle/minesweeper';
+import { balanceScaleGame } from './games/middle/balanceScale';
 import { nbackGame } from './games/senior/nback';
 import { logicGateGame } from './games/senior/logicGate';
 import { sudoku6x6Game } from './games/senior/sudoku6x6';
 import { sudoku9x9Game } from './games/senior/sudoku9x9';
 import { dualMatrixGame } from './games/senior/dualMatrix';
 import { zebraPuzzleGame } from './games/senior/zebraPuzzle';
+import { nonogramGame } from './games/senior/nonogram';
+import { binaryPuzzleGame } from './games/senior/binaryPuzzle';
+import { target24Game } from './games/senior/target24';
 import { loadPrefs, savePrefs } from './storage/prefs';
 import { saveSession } from './storage/db';
 import { buildShareUrl, parseUrlSeed } from './storage/urlSeed';
@@ -37,17 +46,26 @@ const GAMES: Record<GameId, GameModule> = {
   dccsMaze: dccsMazeGame,
   schulte: schulteGame,
   fireflyMemory: fireflyMemoryGame,
+  conjunctionSearch: conjunctionSearchGame,
+  symmetryGrid: symmetryGridGame,
+  mastermind: mastermindGame,
   hanoi: hanoiGame,
   spatialConflict: spatialConflictGame,
   matrixPattern: matrixPatternGame,
   blockMaze: blockMazeGame,
   lightsOut: lightsOutGame,
+  sokoban: sokobanGame,
+  minesweeper: minesweeperGame,
+  balanceScale: balanceScaleGame,
   nback: nbackGame,
   logicGate: logicGateGame,
   sudoku6x6: sudoku6x6Game,
   sudoku9x9: sudoku9x9Game,
   dualMatrix: dualMatrixGame,
   zebraPuzzle: zebraPuzzleGame,
+  nonogram: nonogramGame,
+  binaryPuzzle: binaryPuzzleGame,
+  target24: target24Game,
 };
 
 const AGE_TIERS: { id: AgeTier; label: string }[] = [
