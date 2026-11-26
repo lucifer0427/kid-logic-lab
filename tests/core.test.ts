@@ -19,6 +19,7 @@ import { isValidTakuzuBoard } from '../src/games/senior/binaryPuzzle';
 import { evaluateArithmeticExpr } from '../src/games/senior/target24';
 import { generateFlankerTrial } from '../src/games/middle/flankerFish';
 import { isAxTarget } from '../src/games/senior/axCpt';
+import { SOKOBAN_MAPS } from '../src/games/middle/sokoban';
 
 describe('SeededRng', () => {
   it('produces identical deterministic sequences for the same seed', () => {
@@ -209,5 +210,23 @@ describe('New Games Pure Logic', () => {
     expect(isAxTarget('A', 'Y')).toBe(false);
     expect(isAxTarget('B', 'X')).toBe(false);
     expect(isAxTarget(null, 'X')).toBe(false);
+  });
+
+  it('verifies every Sokoban map has equal boxes and goals and exactly one player', () => {
+    for (const map of SOKOBAN_MAPS) {
+      let boxes = 0;
+      let goals = 0;
+      let players = 0;
+      for (const row of map) {
+        for (const ch of row) {
+          if (ch === '$') boxes += 1;
+          else if (ch === '.') goals += 1;
+          else if (ch === '@') players += 1;
+        }
+      }
+      expect(boxes).toBeGreaterThan(0);
+      expect(boxes).toBe(goals);
+      expect(players).toBe(1);
+    }
   });
 });

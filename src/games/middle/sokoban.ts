@@ -7,15 +7,15 @@ import { createTutorialOverlay } from '../../ui/components/TutorialOverlay';
 import { computeSessionMetrics } from '../../telemetry/asiCalculator';
 
 // Curated verified-solvable Sokoban maps: '#' wall, '.' goal, '$' box, '@' player
-const SOKOBAN_MAPS: readonly string[][] = [
+export const SOKOBAN_MAPS: readonly string[][] = [
   [
     '######',
-    '#....#',
-    '#.$..#',
-    '#.$@.#',
-    '#....#',
+    '# .  #',
+    '# $  #',
+    '# $@ #',
+    '# .  #',
     '######',
-  ].map((row, r) => (r === 1 ? '#..###' : r === 2 ? '#.$. #' : r === 3 ? '# $@ #' : row)),
+  ],
   [
     '######',
     '#   .#',
