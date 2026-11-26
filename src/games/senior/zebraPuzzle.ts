@@ -24,20 +24,19 @@ export function generateZebraPuzzle(seed: number): ZebraPuzzleSpec {
   const colorOf = rng.shuffle([0, 1, 2]);
   const shapeOf = rng.shuffle([0, 1, 2]);
 
-  // Construct deterministic, sufficient clues
+  // Construct mathematically unique-solution clues:
+  // Clue 1 pins Person 0 completely; Clue 2 links Person 1's color <-> shape;
+  // Clue 3 eliminates Person 2's color from Person 1, forcing a unique assignment.
   const p0Color = colors[colorOf[0]];
-  const p1NotShape = shapes[(shapeOf[1] + 1) % 3];
-  const p2NotColor = colors[(colorOf[2] + 1) % 3];
-  const shapeOwnerOf0 = shapes[shapeOf[0]];
-
-  // Link color[1] to shape[1]
+  const p0Shape = shapes[shapeOf[0]];
   const p1Color = colors[colorOf[1]];
   const p1Shape = shapes[shapeOf[1]];
+  const p2Color = colors[colorOf[2]];
 
   const clues = [
-    `1. ${names[0]}喜歡的是【${p0Color}】，而且拿著【${shapeOwnerOf0}】。`,
+    `1. ${names[0]}喜歡的是【${p0Color}】，而且拿著【${p0Shape}】。`,
     `2. 喜歡【${p1Color}】的人拿著【${p1Shape}】。`,
-    `3. ${names[1]}拿的不是【${p1NotShape}】，${names[2]}喜歡的不是【${p2NotColor}】。`,
+    `3. ${names[1]}喜歡的不是【${p2Color}】。`,
   ];
 
   return { names, colors, shapes, colorOf, shapeOf, clues };

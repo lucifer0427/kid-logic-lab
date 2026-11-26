@@ -1,10 +1,14 @@
 import { SessionRecord } from '../engine/types';
 import { getAllSessions, saveSession } from './db';
+import { EngagementState, loadEngagement, saveEngagement } from './engagement';
+import { UserPrefs, loadPrefs, savePrefs } from './prefs';
 
 export interface LearningBackupV1 {
   schema: 'kid-logic-lab-backup-v1';
   exportedAt: number;
   sessions: SessionRecord[];
+  engagement?: EngagementState;
+  prefs?: UserPrefs;
 }
 
 export async function exportSessionsJson(): Promise<string> {
@@ -13,6 +17,8 @@ export async function exportSessionsJson(): Promise<string> {
     schema: 'kid-logic-lab-backup-v1',
     exportedAt: Date.now(),
     sessions,
+    engagement: loadEngagement(),
+    prefs: loadPrefs(),
   };
   return JSON.stringify(payload, null, 2);
 }
@@ -28,6 +34,12 @@ export async function importSessionsJson(jsonText: string): Promise<number> {
       await saveSession(s);
       imported += 1;
     }
+  }
+  if (parsed.engagement && Array.isArray(parsed.engagement.unlockedBadges)) {
+    saveEngagement(parsed.engagement);
+  }
+  if (parsed.prefs && parsed.prefs.levels) {
+    savePrefs(parsed.prefs);
   }
   return imported;
 }

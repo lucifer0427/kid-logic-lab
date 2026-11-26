@@ -215,11 +215,11 @@ export async function renderDashboard(container: HTMLElement, onBack: () => void
     </section>
   `;
 
-  container.querySelector('#dash-back')?.addEventListener('pointerdown', onBack);
+  container.querySelector('#dash-back')?.addEventListener('click', onBack);
 
   const statusEl = container.querySelector('#dash-status') as HTMLElement;
 
-  container.querySelector('#btn-export')?.addEventListener('pointerdown', async () => {
+  container.querySelector('#btn-export')?.addEventListener('click', async () => {
     const json = await exportSessionsJson();
     const blob = new Blob([json], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -228,7 +228,7 @@ export async function renderDashboard(container: HTMLElement, onBack: () => void
     a.download = `kid-logic-lab-backup-${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
-    statusEl.textContent = '已匯出 JSON 學習紀錄檔。';
+    statusEl.textContent = '已匯出 JSON 學習紀錄檔（含徽章與階梯進度）。';
   });
 
   container.querySelector('#input-import')?.addEventListener('change', async (e) => {
@@ -245,7 +245,8 @@ export async function renderDashboard(container: HTMLElement, onBack: () => void
     }
   });
 
-  container.querySelector('#btn-clear')?.addEventListener('pointerdown', async () => {
+  container.querySelector('#btn-clear')?.addEventListener('click', async () => {
+    if (!window.confirm('確定要清除所有本機學習紀錄嗎？建議先匯出 JSON 備份。')) return;
     await clearAllSessions();
     await renderDashboard(container, onBack);
   });

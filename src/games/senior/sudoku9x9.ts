@@ -130,6 +130,7 @@ export const sudoku9x9Game: GameModule = {
           <button type="button" class="btn ${noteMode ? 'btn-primary' : 'btn-outline'}" id="toggle-note-9">
             ${noteMode ? '✎ 筆記模式：開啟' : '✎ 筆記模式：關閉'}
           </button>
+          <button type="button" class="btn btn-outline" id="smart-hint-9">💡 給我一條線索</button>
           <button type="button" class="btn btn-outline" id="clear-cell-9">清除此格</button>
         </div>
       `;
@@ -145,11 +146,58 @@ export const sudoku9x9Game: GameModule = {
         noteMode = !noteMode;
         render();
       });
+      controlsHost.querySelector('#smart-hint-9')?.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        giveSmartHint();
+      });
       controlsHost.querySelector('#clear-cell-9')?.addEventListener('pointerdown', (e) => {
         e.preventDefault();
         applyNumber(0);
       });
     }
+
+    function giveSmartHint(): void {
+      if (disposed || !puzzleData) return;
+      let bestIdx = -1;
+      let minCands = 10;
+      for (let i = 0; i < 81; i++) {
+        if (grid[i] !== 0) continue;
+        let candCount = 0;
+        for (let n = 1; n <= 9; n++) {
+          if (!hasConflict(i, n)) candCount += 1;
+        }
+        if (candCount > 0 && candCount < minCands) {
+          minCands = candCount;
+          bestIdx = i;
+          if (minCands === 1) break;
+        }
+      }
+      if (bestIdx !== -1) {
+        selectedIdx = bestIdx;
+        const r = Math.floor(bestIdx / 9) + 1;
+        const c = (bestIdx % 9) + 1;
+        statusLine.textContent =
+          minCands === 1
+            ? `💡 看看第 ${r} 列第 ${c} 行：這格只剩下 1 個可能的數字囉！`
+            : `💡 可以先觀察第 ${r} 列第 ${c} 行，它只剩 ${minCands} 個候選數字`;
+        render();
+      }
+    }
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (disposed || !puzzleData) return;
+      if (e.key >= '1' && e.key <= '9') {
+        applyNumber(Number(e.key));
+      } else if (e.key === 'Backspace' || e.key === 'Delete') {
+        applyNumber(0);
+      } else if (selectedIdx !== null && ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+        e.preventDefault();
+        const delta = e.key === 'ArrowUp' ? -9 : e.key === 'ArrowDown' ? 9 : e.key === 'ArrowLeft' ? -1 : 1;
+        selectedIdx = Math.max(0, Math.min(80, selectedIdx + delta));
+        render();
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
 
     function applyNumber(num: number): void {
       if (disposed || !puzzleData || selectedIdx === null || fixed[selectedIdx]) return;
@@ -224,6 +272,7 @@ export const sudoku9x9Game: GameModule = {
 
     return () => {
       disposed = true;
+      window.removeEventListener('keydown', onKeyDown);
     };
   },
 };

@@ -94,11 +94,38 @@ describe('Lights Out, Zebra Puzzle & Daily Quest', () => {
     expect(restored).toEqual(p.grid);
   });
 
-  it('Zebra Puzzle generates deterministic valid clues', () => {
+  it('Zebra Puzzle generates deterministic clues with a unique solution across seeds', () => {
     const z1 = generateZebraPuzzle(999);
     const z2 = generateZebraPuzzle(999);
     expect(z1).toEqual(z2);
     expect(z1.clues).toHaveLength(3);
+
+    // Exhaustively check all 6 * 6 = 36 color/shape permutations for uniqueness across 20 seeds
+    const perms = [
+      [0, 1, 2],
+      [0, 2, 1],
+      [1, 0, 2],
+      [1, 2, 0],
+      [2, 0, 1],
+      [2, 1, 0],
+    ];
+    for (let seed = 1; seed <= 20; seed++) {
+      const z = generateZebraPuzzle(seed * 137);
+      let validCount = 0;
+      for (const cp of perms) {
+        for (const sp of perms) {
+          // Clue 1: Person 0 has colorOf[0] and shapeOf[0]
+          const c1 = cp[0] === z.colorOf[0] && sp[0] === z.shapeOf[0];
+          // Clue 2: Person with colorOf[1] has shapeOf[1]
+          const ownerOfP1Color = cp.indexOf(z.colorOf[1]);
+          const c2 = sp[ownerOfP1Color] === z.shapeOf[1];
+          // Clue 3: Person 1 does NOT have colorOf[2]
+          const c3 = cp[1] !== z.colorOf[2];
+          if (c1 && c2 && c3) validCount += 1;
+        }
+      }
+      expect(validCount).toBe(1);
+    }
   });
 
   it('Daily Quest produces 3 deterministic games per age tier', () => {

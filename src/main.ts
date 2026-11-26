@@ -102,7 +102,7 @@ function renderShellHeader(activeView: 'home' | 'game' | 'dashboard'): HTMLEleme
     </div>
   `;
 
-  header.querySelector('#btn-mute')?.addEventListener('pointerdown', () => {
+  header.querySelector('#btn-mute')?.addEventListener('click', () => {
     audioGateway.unlock();
     prefs.muted = !prefs.muted;
     audioGateway.setMuted(prefs.muted);
@@ -112,7 +112,7 @@ function renderShellHeader(activeView: 'home' | 'game' | 'dashboard'): HTMLEleme
     btn.setAttribute('aria-pressed', String(prefs.muted));
   });
 
-  header.querySelector('#btn-dashboard')?.addEventListener('pointerdown', () => {
+  header.querySelector('#btn-dashboard')?.addEventListener('click', () => {
     openDashboard();
   });
 
@@ -237,7 +237,7 @@ function renderHome(): void {
   appEl.appendChild(main);
 
   main.querySelectorAll<HTMLButtonElement>('.daily-quest-item').forEach((btn) => {
-    btn.addEventListener('pointerdown', () => {
+    btn.addEventListener('click', () => {
       audioGateway.unlock();
       const gameId = btn.dataset.game as GameId;
       launchGame(gameId, daily.seed, prefs.levels[gameId] ?? 1, false);
@@ -245,7 +245,7 @@ function renderHome(): void {
   });
 
   main.querySelectorAll<HTMLButtonElement>('.tier-tab').forEach((btn) => {
-    btn.addEventListener('pointerdown', () => {
+    btn.addEventListener('click', () => {
       prefs.ageTier = btn.dataset.tier as AgeTier;
       savePrefs(prefs);
       renderHome();
@@ -253,7 +253,7 @@ function renderHome(): void {
   });
 
   main.querySelectorAll<HTMLButtonElement>('.skin-btn').forEach((btn) => {
-    btn.addEventListener('pointerdown', () => {
+    btn.addEventListener('click', () => {
       prefs.themeSkin = btn.dataset.skin as ThemeSkin;
       savePrefs(prefs);
       renderHome();
@@ -261,7 +261,7 @@ function renderHome(): void {
   });
 
   main.querySelectorAll<HTMLButtonElement>('.launch-btn').forEach((btn) => {
-    btn.addEventListener('pointerdown', () => {
+    btn.addEventListener('click', () => {
       audioGateway.unlock();
       const gameId = btn.dataset.game as GameId;
       launchGame(gameId, generateFreshSeed(), prefs.levels[gameId] ?? 1, true);
@@ -292,12 +292,12 @@ function launchGame(gameId: GameId, seed: number, level: number, showTutorial: b
   appEl.appendChild(toolbar);
   appEl.appendChild(stageHost);
 
-  toolbar.querySelector('#btn-back-home')?.addEventListener('pointerdown', () => {
+  toolbar.querySelector('#btn-back-home')?.addEventListener('click', () => {
     renderHome();
   });
 
   const shareBtn = toolbar.querySelector('#btn-share-seed') as HTMLButtonElement;
-  shareBtn.addEventListener('pointerdown', async () => {
+  shareBtn.addEventListener('click', async () => {
     const url = buildShareUrl(window.location.href, gameId, seed, level);
     try {
       await navigator.clipboard.writeText(url);
@@ -307,7 +307,7 @@ function launchGame(gameId: GameId, seed: number, level: number, showTutorial: b
     }
   });
 
-  toolbar.querySelector('#btn-qr-seed')?.addEventListener('pointerdown', () => {
+  toolbar.querySelector('#btn-qr-seed')?.addEventListener('click', () => {
     const url = buildShareUrl(window.location.href, gameId, seed, level);
     showQrModal(url, `${game.title}（種子 #${seed}・Lv.${level}）`);
   });
