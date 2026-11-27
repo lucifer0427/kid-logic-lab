@@ -1359,3 +1359,119 @@ body {
   border-color: #E69F00;
   color: #B45309;
 }
+
+.odd-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.odd-cell {
+  width: 96px;
+  height: 96px;
+  border: 2px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.train-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.train-car {
+  width: 56px;
+  height: 56px;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  background: #F8FAFC;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.3rem;
+}
+
+.train-car.is-missing {
+  border-style: dashed;
+  border-color: var(--primary);
+  color: var(--primary);
+  background: #E0F2FE;
+}
+
+.bridges-svg {
+  max-width: 100%;
+  height: auto;
+}
+
+.maze-cell.is-head {
+  background: #0072B2;
+  color: #FFFFFF;
+}
+
+.maze-cell.is-steppable {
+  border: 2px dashed var(--primary);
+  cursor: pointer;
+}
+
+.knight-cell {
+  width: 56px;
+  height: 56px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #FFFFFF;
+  font-weight: 700;
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+.knight-cell.is-dark {
+  background: #F1F5F9;
+}
+
+.knight-cell.is-visited {
+  background: #DCFCE7;
+  color: #009E73;
+}
+
+.knight-cell.is-head {
+  background: #0072B2;
+  color: #FFFFFF;
+  font-size: 1.5rem;
+}
+
+.knight-cell.is-legal {
+  outline: 2px dashed var(--primary);
+  outline-offset: -3px;
+  background: #E0F2FE;
+}
+
+.set-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 102px);
+  gap: 10px;
+}
+
+.set-card {
+  width: 102px;
+  height: 70px;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.set-card.is-selected {
+  border-color: var(--primary);
+  background: #E0F2FE;
+  outline: 2px solid var(--primary);
+}

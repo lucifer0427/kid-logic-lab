@@ -30,7 +30,13 @@ export type GameId =
   | 'target24'
   | 'waitSignal'
   | 'flankerFish'
-  | 'axCpt';
+  | 'axCpt'
+  | 'oddOneOut'
+  | 'sequenceSort'
+  | 'bridges'
+  | 'pathFinder'
+  | 'knightTour'
+  | 'setMatch';
 
 export const ALL_GAME_IDS: readonly GameId[] = [
   'gonogo',
@@ -42,6 +48,8 @@ export const ALL_GAME_IDS: readonly GameId[] = [
   'symmetryGrid',
   'mastermind',
   'waitSignal',
+  'oddOneOut',
+  'sequenceSort',
   'hanoi',
   'spatialConflict',
   'matrixPattern',
@@ -51,6 +59,8 @@ export const ALL_GAME_IDS: readonly GameId[] = [
   'minesweeper',
   'balanceScale',
   'flankerFish',
+  'bridges',
+  'pathFinder',
   'nback',
   'logicGate',
   'sudoku6x6',
@@ -61,6 +71,8 @@ export const ALL_GAME_IDS: readonly GameId[] = [
   'binaryPuzzle',
   'target24',
   'axCpt',
+  'knightTour',
+  'setMatch',
 ] as const;
 
 export type CognitiveAxis =

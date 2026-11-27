@@ -9,6 +9,8 @@ import { conjunctionSearchGame } from './games/junior/conjunctionSearch';
 import { symmetryGridGame } from './games/junior/symmetryGrid';
 import { mastermindGame } from './games/junior/mastermind';
 import { waitSignalGame } from './games/junior/waitSignal';
+import { oddOneOutGame } from './games/junior/oddOneOut';
+import { sequenceSortGame } from './games/junior/sequenceSort';
 import { hanoiGame } from './games/middle/hanoi';
 import { spatialConflictGame } from './games/middle/spatialConflict';
 import { matrixPatternGame } from './games/middle/matrixPattern';
@@ -18,6 +20,8 @@ import { sokobanGame } from './games/middle/sokoban';
 import { minesweeperGame } from './games/middle/minesweeper';
 import { balanceScaleGame } from './games/middle/balanceScale';
 import { flankerFishGame } from './games/middle/flankerFish';
+import { bridgesGame } from './games/middle/bridges';
+import { pathFinderGame } from './games/middle/pathFinder';
 import { nbackGame } from './games/senior/nback';
 import { logicGateGame } from './games/senior/logicGate';
 import { sudoku6x6Game } from './games/senior/sudoku6x6';
@@ -28,6 +32,8 @@ import { nonogramGame } from './games/senior/nonogram';
 import { binaryPuzzleGame } from './games/senior/binaryPuzzle';
 import { target24Game } from './games/senior/target24';
 import { axCptGame } from './games/senior/axCpt';
+import { knightTourGame } from './games/senior/knightTour';
+import { setMatchGame } from './games/senior/setMatch';
 import { loadPrefs, savePrefs } from './storage/prefs';
 import { saveSession } from './storage/db';
 import { buildChallengeUrl, buildShareUrl, parseUrlSeed } from './storage/urlSeed';
@@ -59,6 +65,8 @@ const GAMES: Record<GameId, GameModule> = {
   symmetryGrid: symmetryGridGame,
   mastermind: mastermindGame,
   waitSignal: waitSignalGame,
+  oddOneOut: oddOneOutGame,
+  sequenceSort: sequenceSortGame,
   hanoi: hanoiGame,
   spatialConflict: spatialConflictGame,
   matrixPattern: matrixPatternGame,
@@ -68,6 +76,8 @@ const GAMES: Record<GameId, GameModule> = {
   minesweeper: minesweeperGame,
   balanceScale: balanceScaleGame,
   flankerFish: flankerFishGame,
+  bridges: bridgesGame,
+  pathFinder: pathFinderGame,
   nback: nbackGame,
   logicGate: logicGateGame,
   sudoku6x6: sudoku6x6Game,
@@ -78,6 +88,8 @@ const GAMES: Record<GameId, GameModule> = {
   binaryPuzzle: binaryPuzzleGame,
   target24: target24Game,
   axCpt: axCptGame,
+  knightTour: knightTourGame,
+  setMatch: setMatchGame,
 };
 
 const ADHD_GAME_IDS: readonly GameId[] = [

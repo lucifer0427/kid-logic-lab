@@ -21,6 +21,8 @@ import { generateFlankerTrial } from '../src/games/middle/flankerFish';
 import { isAxTarget } from '../src/games/senior/axCpt';
 import { SOKOBAN_MAPS } from '../src/games/middle/sokoban';
 import { escapeHtml } from '../src/ui/escapeHtml';
+import { isKnightMove } from '../src/games/senior/knightTour';
+import { isValidSet } from '../src/games/senior/setMatch';
 
 describe('SeededRng', () => {
   it('produces identical deterministic sequences for the same seed', () => {
@@ -255,5 +257,28 @@ describe('New Games Pure Logic', () => {
     expect(escapeHtml('<img src=x onerror="alert(1)">')).toBe(
       '&lt;img src=x onerror=&quot;alert(1)&quot;&gt;',
     );
+  });
+
+  it('validates Knight Tour L-shaped moves on 5x5 board', () => {
+    expect(isKnightMove(0, 7)).toBe(true);  // (0,0) -> (1,2)
+    expect(isKnightMove(0, 11)).toBe(true); // (0,0) -> (2,1)
+    expect(isKnightMove(0, 1)).toBe(false);
+  });
+
+  it('validates SET 3-attribute all-same or all-different rule', () => {
+    expect(
+      isValidSet(
+        { color: 0, shape: 0, count: 1 },
+        { color: 1, shape: 1, count: 2 },
+        { color: 2, shape: 2, count: 3 },
+      ),
+    ).toBe(true);
+    expect(
+      isValidSet(
+        { color: 0, shape: 0, count: 1 },
+        { color: 0, shape: 1, count: 2 },
+        { color: 1, shape: 2, count: 3 },
+      ),
+    ).toBe(false);
   });
 });
