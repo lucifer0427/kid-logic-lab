@@ -41,6 +41,7 @@ import {
 } from './storage/engagement';
 import { audioGateway } from './ui/audio/unlock';
 import { showQrModal } from './ui/components/QrModal';
+import { escapeHtml } from './ui/escapeHtml';
 import { renderDashboard } from './dashboard/radarView';
 import {
   mountLiveReactionBattle,
@@ -255,7 +256,7 @@ function renderHome(): void {
     `;
   }).join('');
 
-  const displayName = prefs.nickname || '小小探險家';
+  const displayName = escapeHtml(prefs.nickname || '小小探險家');
 
   main.innerHTML = `
     <section class="card nickname-bar">
@@ -433,7 +434,7 @@ function renderSessionSummary(
 ): void {
   unmountCurrent();
   const kid = getKidHeadline(record.metrics.asi, record.metrics.accuracy);
-  const namePrefix = prefs.nickname ? `${prefs.nickname}，` : '';
+  const namePrefix = prefs.nickname ? `${escapeHtml(prefs.nickname)}，` : '';
 
   const newBadgeHtml =
     newlyUnlocked.length > 0
@@ -631,7 +632,7 @@ if (urlParams.game) {
     appEl.appendChild(renderShellHeader('battle'));
     const banner = document.createElement('div');
     banner.className = 'game-toolbar';
-    banner.innerHTML = `<span class="badge">⚔️ 正在挑戰 ${urlParams.challengerName} 的同題紀錄（${game.title}）</span>`;
+    banner.innerHTML = `<span class="badge">⚔️ 正在挑戰 ${escapeHtml(urlParams.challengerName)} 的同題紀錄（${game.title}）</span>`;
     const stageHost = document.createElement('main');
     stageHost.className = 'game-host';
     appEl.appendChild(banner);

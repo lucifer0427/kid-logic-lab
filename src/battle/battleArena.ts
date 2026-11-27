@@ -3,6 +3,7 @@ import { SeededRng } from '../worker/prng';
 import { OKABE_ITO_PALETTE, drawTokenOnCanvas } from '../ui/theme/okabeIto';
 import { audioGateway } from '../ui/audio/unlock';
 import { VisualTimer } from '../ui/components/VisualTimer';
+import { escapeHtml } from '../ui/escapeHtml';
 
 export function renderBattleLobby(
   container: HTMLElement,
@@ -102,6 +103,9 @@ export function mountLiveReactionBattle(
   let stimStartMs = 0;
   let timerId: number | null = null;
 
+  const safeP1 = escapeHtml(p1Name);
+  const safeP2 = escapeHtml(p2Name);
+
   container.innerHTML = `
     <div class="game-stage">
       <div class="stage-header">
@@ -116,13 +120,13 @@ export function mountLiveReactionBattle(
       </div>
       <div id="live-timer-slot" style="width:100%;"></div>
       <div class="live-scoreboard">
-        <div class="score-pill p1-pill">🔵 ${p1Name}：<strong id="s1">0</strong></div>
-        <div class="score-pill p2-pill">🟠 ${p2Name}：<strong id="s2">0</strong></div>
+        <div class="score-pill p1-pill">🔵 ${safeP1}：<strong id="s1">0</strong></div>
+        <div class="score-pill p2-pill">🟠 ${safeP2}：<strong id="s2">0</strong></div>
       </div>
       <canvas class="gonogo-canvas" id="live-canvas" width="420" height="220"></canvas>
       <div class="live-pads">
-        <button type="button" class="btn live-pad p1-pad" id="pad-p1">🔵 ${p1Name} 搶答區<br><small>(鍵盤 A 鍵)</small></button>
-        <button type="button" class="btn live-pad p2-pad" id="pad-p2">🟠 ${p2Name} 搶答區<br><small>(鍵盤 L 鍵)</small></button>
+        <button type="button" class="btn live-pad p1-pad" id="pad-p1">🔵 ${safeP1} 搶答區<br><small>(鍵盤 A 鍵)</small></button>
+        <button type="button" class="btn live-pad p2-pad" id="pad-p2">🟠 ${safeP2} 搶答區<br><small>(鍵盤 L 鍵)</small></button>
       </div>
       <div class="stage-status" id="live-status">準備好了嗎？眼睛盯緊中間！</div>
     </div>
@@ -201,20 +205,21 @@ export function mountLiveReactionBattle(
   window.addEventListener('keydown', onKeyDown);
 
   function showLiveWinner(): void {
+    window.removeEventListener('keydown', onKeyDown);
     audioGateway.playTone('complete');
     const winner =
-      score1 > score2 ? `🏆 ${p1Name} 獲勝！` : score2 > score1 ? `🏆 ${p2Name} 獲勝！` : '🤝 勢均力敵，平手！';
+      score1 > score2 ? `🏆 ${safeP1} 獲勝！` : score2 > score1 ? `🏆 ${safeP2} 獲勝！` : '🤝 勢均力敵，平手！';
     container.innerHTML = `
       <div class="summary-card pop-soft">
         <div style="font-size:2.4rem;">⚔️</div>
         <h2 style="margin:0;">${winner}</h2>
         <div class="summary-kid-bars">
           <div class="metric-box">
-            <span class="metric-label">🔵 ${p1Name}</span>
+            <span class="metric-label">🔵 ${safeP1}</span>
             <strong class="metric-value">${score1} 分</strong>
           </div>
           <div class="metric-box">
-            <span class="metric-label">🟠 ${p2Name}</span>
+            <span class="metric-label">🟠 ${safeP2}</span>
             <strong class="metric-value">${score2} 分</strong>
           </div>
         </div>
@@ -288,28 +293,30 @@ export function renderBattleComparison(
   onRematch: () => void,
   onHome: () => void,
 ): void {
+  const safeP1 = escapeHtml(p1Name);
+  const safeP2 = escapeHtml(p2Name);
   const score1 = p1Asi * 0.6 + p1Acc * 100 * 0.4;
   const score2 = p2Asi * 0.6 + p2Acc * 100 * 0.4;
   const headline =
     Math.abs(score1 - score2) < 1
       ? '🤝 棋逢敵手，平分秋色！'
       : score1 > score2
-        ? `🏆 ${p1Name} 領先勝出！`
-        : `🏆 ${p2Name} 領先勝出！`;
+        ? `🏆 ${safeP1} 領先勝出！`
+        : `🏆 ${safeP2} 領先勝出！`;
 
   container.innerHTML = `
     <div class="summary-card pop-soft">
       <div style="font-size:2.2rem;">⚔️</div>
       <h2 style="margin:0;">${headline}</h2>
-      <p class="muted" style="margin:0;">對戰項目：${gameTitle}</p>
+      <p class="muted" style="margin:0;">對戰項目：${escapeHtml(gameTitle)}</p>
       <div class="summary-kid-bars">
         <div class="metric-box">
-          <span class="metric-label">🔵 ${p1Name}</span>
+          <span class="metric-label">🔵 ${safeP1}</span>
           <strong class="metric-value">ASI ${p1Asi}</strong>
           <span class="muted">正確率 ${Math.round(p1Acc * 100)}%</span>
         </div>
         <div class="metric-box">
-          <span class="metric-label">🟠 ${p2Name}</span>
+          <span class="metric-label">🟠 ${safeP2}</span>
           <strong class="metric-value">ASI ${p2Asi}</strong>
           <span class="muted">正確率 ${Math.round(p2Acc * 100)}%</span>
         </div>

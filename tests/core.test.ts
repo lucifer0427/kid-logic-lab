@@ -20,6 +20,7 @@ import { evaluateArithmeticExpr } from '../src/games/senior/target24';
 import { generateFlankerTrial } from '../src/games/middle/flankerFish';
 import { isAxTarget } from '../src/games/senior/axCpt';
 import { SOKOBAN_MAPS } from '../src/games/middle/sokoban';
+import { escapeHtml } from '../src/ui/escapeHtml';
 
 describe('SeededRng', () => {
   it('produces identical deterministic sequences for the same seed', () => {
@@ -248,5 +249,11 @@ describe('New Games Pure Logic', () => {
       expect(boxes).toBe(goals);
       expect(players).toBe(1);
     }
+  });
+
+  it('escapes HTML special characters in user nicknames and URL params', () => {
+    expect(escapeHtml('<img src=x onerror="alert(1)">')).toBe(
+      '&lt;img src=x onerror=&quot;alert(1)&quot;&gt;',
+    );
   });
 });

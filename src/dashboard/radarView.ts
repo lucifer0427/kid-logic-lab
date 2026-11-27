@@ -2,6 +2,7 @@ import { CognitiveAxis, SessionRecord } from '../engine/types';
 import { getAllSessions, clearAllSessions } from '../storage/db';
 import { exportSessionsJson, importSessionsJson } from '../storage/jsonBackup';
 import { loadPrefs } from '../storage/prefs';
+import { escapeHtml } from '../ui/escapeHtml';
 
 const AXES: { key: CognitiveAxis; label: string }[] = [
   { key: 'attentionStability', label: '專注穩定 (ASI)' },
@@ -157,7 +158,7 @@ export async function renderDashboard(container: HTMLElement, onBack: () => void
     .join('');
 
   const prefs = loadPrefs();
-  const displayOwner = prefs.nickname ? `${prefs.nickname} 的` : '';
+  const displayOwner = prefs.nickname ? `${escapeHtml(prefs.nickname)} 的` : '';
 
   container.innerHTML = `
     <section class="dashboard-view">
