@@ -1,6 +1,6 @@
 import { GameLaunchConfig, GameModule, TrialRecord } from '../../engine/types';
 import { SeededRng } from '../../worker/prng';
-import { OKABE_ITO_PALETTE, renderThemedTokenSvg } from '../../ui/theme/okabeIto';
+import { renderThemedTokenSvg } from '../../ui/theme/okabeIto';
 import { audioGateway } from '../../ui/audio/unlock';
 import { VisualTimer } from '../../ui/components/VisualTimer';
 import { createTutorialOverlay } from '../../ui/components/TutorialOverlay';
@@ -113,8 +113,6 @@ export const countCompareGame: GameModule = {
 
       roundStartMs = performance.now();
     }
-
-    void OKABE_ITO_PALETTE;
 
     if (config.showTutorial) {
       const svg = `<div style="font-size:0.95rem;font-weight:600;color:#0072B2;">只數「個數」，不要被圖形大小騙到喔！</div>`;

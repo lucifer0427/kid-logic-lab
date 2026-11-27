@@ -131,7 +131,54 @@ export const bridgesGame: GameModule = {
         if (a.r === b.r && isl.r === a.r && isl.c > Math.min(a.c, b.c) && isl.c < Math.max(a.c, b.c)) return false;
         if (a.c === b.c && isl.c === a.c && isl.r > Math.min(a.r, b.r) && isl.r < Math.max(a.r, b.r)) return false;
       }
+      // Prevent crossing any existing perpendicular bridge
+      for (const [key, count] of bridges.entries()) {
+        if (count === 0) continue;
+        const [id1, id2] = key.split('-').map(Number);
+        const p1 = puzzle.islands.find((i) => i.id === id1)!;
+        const p2 = puzzle.islands.find((i) => i.id === id2)!;
+        if (a.r === b.r && p1.c === p2.c) {
+          if (
+            p1.c > Math.min(a.c, b.c) &&
+            p1.c < Math.max(a.c, b.c) &&
+            a.r > Math.min(p1.r, p2.r) &&
+            a.r < Math.max(p1.r, p2.r)
+          ) {
+            return false;
+          }
+        } else if (a.c === b.c && p1.r === p2.r) {
+          if (
+            a.c > Math.min(p1.c, p2.c) &&
+            a.c < Math.max(p1.c, p2.c) &&
+            p1.r > Math.min(a.r, b.r) &&
+            p1.r < Math.max(a.r, b.r)
+          ) {
+            return false;
+          }
+        }
+      }
       return true;
+    }
+
+    function areIslandsConnected(): boolean {
+      if (puzzle.islands.length === 0) return true;
+      const seen = new Set<number>([puzzle.islands[0].id]);
+      const queue = [puzzle.islands[0].id];
+      while (queue.length > 0) {
+        const cur = queue.shift()!;
+        for (const [key, count] of bridges.entries()) {
+          if (count === 0) continue;
+          const [id1, id2] = key.split('-').map(Number);
+          if (id1 === cur && !seen.has(id2)) {
+            seen.add(id2);
+            queue.push(id2);
+          } else if (id2 === cur && !seen.has(id1)) {
+            seen.add(id1);
+            queue.push(id1);
+          }
+        }
+      }
+      return seen.size === puzzle.islands.length;
     }
 
     function degreeOf(id: number): number {
@@ -253,7 +300,7 @@ export const bridgesGame: GameModule = {
       trials.push({ isTarget: true, correct: true, rtMs, errorType: 'none' });
       render();
 
-      const allSatisfied = puzzle.islands.every((isl) => degreeOf(isl.id) === isl.target);
+      const allSatisfied = puzzle.islands.every((isl) => degreeOf(isl.id) === isl.target) && areIslandsConnected();
       if (allSatisfied) {
         audioGateway.playTone('complete');
         const metrics = computeSessionMetrics(trials);

@@ -112,6 +112,29 @@ export const hitoriGame: GameModule = {
       return false;
     }
 
+    function areWhiteCellsConnected(): boolean {
+      const firstWhite = userShaded.findIndex((s) => !s);
+      if (firstWhite === -1) return false;
+      const whiteTotal = userShaded.filter((s) => !s).length;
+      const seen = new Set<number>([firstWhite]);
+      const queue = [firstWhite];
+      while (queue.length > 0) {
+        const cur = queue.shift()!;
+        const r = Math.floor(cur / 4);
+        const c = cur % 4;
+        for (const [nr, nc] of [[r - 1, c], [r + 1, c], [r, c - 1], [r, c + 1]]) {
+          if (nr >= 0 && nr < 4 && nc >= 0 && nc < 4) {
+            const nIdx = nr * 4 + nc;
+            if (!userShaded[nIdx] && !seen.has(nIdx)) {
+              seen.add(nIdx);
+              queue.push(nIdx);
+            }
+          }
+        }
+      }
+      return seen.size === whiteTotal;
+    }
+
     function render(): void {
       if (disposed) return;
       const targetShades = puzzle.shaded.filter(Boolean).length;
@@ -157,7 +180,7 @@ export const hitoriGame: GameModule = {
           }
           render();
 
-          if (!hasAdjacentShade() && !hasDuplicateWhites()) {
+          if (!hasAdjacentShade() && !hasDuplicateWhites() && areWhiteCellsConnected()) {
             audioGateway.playTone('complete');
             const metrics = computeSessionMetrics(trials);
             config.onSessionComplete({

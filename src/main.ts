@@ -338,7 +338,12 @@ function renderHome(): void {
       <div class="skin-nav" aria-label="圖形主題切換">${skinButtons}</div>
     </section>
 
-    <section class="game-grid">${cardsHtml}</section>
+    <section class="search-row">
+      <input type="search" id="input-game-search" class="nickname-input" style="width:100%;max-width:340px;"
+        placeholder="🔍 搜尋 50 款遊戲名稱或訓練目標..." aria-label="搜尋遊戲" />
+    </section>
+
+    <section class="game-grid" id="home-game-grid">${cardsHtml}</section>
 
     <section class="card">
       <h3 style="margin:0;">🏅 實驗室里程碑徽章（已解鎖 ${earnedSet.size} / ${MILESTONE_BADGES.length}）</h3>
@@ -351,6 +356,53 @@ function renderHome(): void {
   `;
 
   appEl.appendChild(main);
+
+  const bindLaunchButtons = () => {
+    main.querySelectorAll<HTMLButtonElement>('.launch-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        audioGateway.unlock();
+        const gameId = btn.dataset.game as GameId;
+        launchGame(gameId, generateFreshSeed(), prefs.levels[gameId] ?? 1, true);
+      });
+    });
+  };
+
+  main.querySelector('#input-game-search')?.addEventListener('input', (e) => {
+    const q = (e.target as HTMLInputElement).value.trim().toLowerCase();
+    const list = q
+      ? Object.values(GAMES).filter(
+          (g) =>
+            g.title.toLowerCase().includes(q) ||
+            g.subtitle.toLowerCase().includes(q) ||
+            g.evidenceBadge.toLowerCase().includes(q),
+        )
+      : filteredGames;
+    const gridEl = main.querySelector('#home-game-grid') as HTMLElement;
+    gridEl.innerHTML =
+      list.length === 0
+        ? '<p class="muted">找不到符合的遊戲關鍵字喔！</p>'
+        : list
+            .map(
+              (g) => `
+          <article class="game-card">
+            <div class="game-card-top">
+              <span class="badge">${g.ageLabel}</span>
+              <span class="evidence-tag">${g.evidenceBadge}</span>
+            </div>
+            <h2>${g.title}</h2>
+            <p>${g.subtitle}</p>
+            <div class="game-card-footer">
+              <span class="muted">目前階梯 Lv.${prefs.levels[g.id] ?? 1}</span>
+              <button type="button" class="btn btn-primary btn-lg launch-btn" data-game="${g.id}">
+                開始練習
+              </button>
+            </div>
+          </article>
+        `,
+            )
+            .join('');
+    bindLaunchButtons();
+  });
 
   main.querySelector('#btn-save-nickname')?.addEventListener('click', () => {
     const input = main.querySelector('#input-nickname') as HTMLInputElement;
