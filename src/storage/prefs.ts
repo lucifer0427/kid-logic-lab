@@ -4,6 +4,7 @@ export interface UserPrefs {
   muted: boolean;
   ageTier: AgeTier;
   themeSkin: ThemeSkin;
+  nickname: string;
   levels: Record<GameId, number>;
 }
 
@@ -22,6 +23,7 @@ export function loadPrefs(): UserPrefs {
     muted: false,
     ageTier: 'junior',
     themeSkin: 'geometry',
+    nickname: '',
     levels: defaultLevels(),
   };
 
@@ -33,6 +35,7 @@ export function loadPrefs(): UserPrefs {
       muted: Boolean(parsed.muted),
       ageTier: parsed.ageTier ?? defaults.ageTier,
       themeSkin: parsed.themeSkin ?? defaults.themeSkin,
+      nickname: typeof parsed.nickname === 'string' ? parsed.nickname.slice(0, 16) : '',
       levels: {
         ...defaults.levels,
         ...(parsed.levels ?? {}),

@@ -241,7 +241,23 @@ function renderHome(): void {
     `;
   }).join('');
 
+  const displayName = prefs.nickname || '小小探險家';
+
   main.innerHTML = `
+    <section class="card nickname-bar">
+      <div class="nickname-row">
+        <div>
+          <strong>🧑‍🚀 嗨，${displayName}！</strong>
+          <span class="muted" style="font-size:0.85rem;margin-left:6px;">（暱稱僅存於本機，請勿填寫真實全名）</span>
+        </div>
+        <div class="nickname-edit-group">
+          <input type="text" id="input-nickname" class="nickname-input" maxlength="12"
+            placeholder="輸入喜歡的暱稱..." value="${prefs.nickname.replace(/"/g, '&quot;')}" aria-label="學童暱稱" />
+          <button type="button" class="btn btn-outline" id="btn-save-nickname">儲存暱稱</button>
+        </div>
+      </div>
+    </section>
+
     <section class="card daily-banner">
       <div class="daily-banner-top">
         <div>
@@ -276,6 +292,13 @@ function renderHome(): void {
   `;
 
   appEl.appendChild(main);
+
+  main.querySelector('#btn-save-nickname')?.addEventListener('click', () => {
+    const input = main.querySelector('#input-nickname') as HTMLInputElement;
+    prefs.nickname = input.value.trim().slice(0, 12);
+    savePrefs(prefs);
+    renderHome();
+  });
 
   main.querySelectorAll<HTMLButtonElement>('.daily-quest-item').forEach((btn) => {
     btn.addEventListener('click', () => {
@@ -396,6 +419,7 @@ function renderSessionSummary(
 ): void {
   unmountCurrent();
   const kid = getKidHeadline(record.metrics.asi, record.metrics.accuracy);
+  const namePrefix = prefs.nickname ? `${prefs.nickname}，` : '';
 
   const newBadgeHtml =
     newlyUnlocked.length > 0
@@ -411,7 +435,7 @@ function renderSessionSummary(
   host.innerHTML = `
     <div class="summary-card pop-soft">
       <div style="font-size:2.4rem;">${kid.emoji}</div>
-      <h2 style="margin:0;">${kid.title}</h2>
+      <h2 style="margin:0;">${namePrefix}${kid.title}</h2>
       <p class="muted" style="margin:0;">${kid.msg}</p>
       ${newBadgeHtml}
       <div class="summary-kid-bars">

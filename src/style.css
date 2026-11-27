@@ -1249,3 +1249,30 @@ body {
 .t24-num-btn.is-used {
   opacity: 0.4;
 }
+
+.nickname-bar {
+  padding: 12px 18px;
+}
+
+.nickname-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.nickname-edit-group {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.nickname-input {
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  font-size: 0.95rem;
+  width: 170px;
+}

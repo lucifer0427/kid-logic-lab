@@ -1,6 +1,7 @@
 import { CognitiveAxis, SessionRecord } from '../engine/types';
 import { getAllSessions, clearAllSessions } from '../storage/db';
 import { exportSessionsJson, importSessionsJson } from '../storage/jsonBackup';
+import { loadPrefs } from '../storage/prefs';
 
 const AXES: { key: CognitiveAxis; label: string }[] = [
   { key: 'attentionStability', label: '專注穩定 (ASI)' },
@@ -155,11 +156,14 @@ export async function renderDashboard(container: HTMLElement, onBack: () => void
     })
     .join('');
 
+  const prefs = loadPrefs();
+  const displayOwner = prefs.nickname ? `${prefs.nickname} 的` : '';
+
   container.innerHTML = `
     <section class="dashboard-view">
       <div class="dashboard-header">
         <div>
-          <h2>師長本地學習儀表板</h2>
+          <h2>${displayOwner}師長本地學習儀表板</h2>
           <p class="muted">所有資料僅儲存於本機 IndexedDB，零個資、零雲端傳輸。</p>
         </div>
         <button type="button" class="btn btn-outline" id="dash-back">返回遊戲</button>
