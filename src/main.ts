@@ -30,7 +30,7 @@ import { target24Game } from './games/senior/target24';
 import { axCptGame } from './games/senior/axCpt';
 import { loadPrefs, savePrefs } from './storage/prefs';
 import { saveSession } from './storage/db';
-import { buildShareUrl, parseUrlSeed } from './storage/urlSeed';
+import { buildChallengeUrl, buildShareUrl, parseUrlSeed } from './storage/urlSeed';
 import {
   BadgeDef,
   MILESTONE_BADGES,
@@ -42,6 +42,11 @@ import {
 import { audioGateway } from './ui/audio/unlock';
 import { showQrModal } from './ui/components/QrModal';
 import { renderDashboard } from './dashboard/radarView';
+import {
+  mountLiveReactionBattle,
+  renderBattleComparison,
+  renderBattleLobby,
+} from './battle/battleArena';
 
 const GAMES: Record<GameId, GameModule> = {
   gonogo: goNoGoGame,
@@ -117,7 +122,7 @@ function unmountCurrent(): void {
   }
 }
 
-function renderShellHeader(activeView: 'home' | 'game' | 'dashboard'): HTMLElement {
+function renderShellHeader(activeView: 'home' | 'game' | 'dashboard' | 'battle'): HTMLElement {
   const header = document.createElement('header');
   header.className = 'topbar';
   header.innerHTML = `
@@ -132,6 +137,11 @@ function renderShellHeader(activeView: 'home' | 'game' | 'dashboard'): HTMLEleme
       <button type="button" class="btn btn-outline" id="btn-mute" aria-pressed="${prefs.muted}">
         ${prefs.muted ? '🔇 靜音中' : '🔊 音效開'}
       </button>
+      ${
+        activeView !== 'battle'
+          ? '<button type="button" class="btn btn-outline" id="btn-battle">⚔️ 雙人對戰</button>'
+          : ''
+      }
       ${
         activeView !== 'dashboard'
           ? '<button type="button" class="btn btn-outline" id="btn-dashboard">師長儀表板</button>'
@@ -148,6 +158,10 @@ function renderShellHeader(activeView: 'home' | 'game' | 'dashboard'): HTMLEleme
     const btn = header.querySelector('#btn-mute') as HTMLButtonElement;
     btn.textContent = prefs.muted ? '🔇 靜音中' : '🔊 音效開';
     btn.setAttribute('aria-pressed', String(prefs.muted));
+  });
+
+  header.querySelector('#btn-battle')?.addEventListener('click', () => {
+    openBattleLobby();
   });
 
   header.querySelector('#btn-dashboard')?.addEventListener('click', () => {
@@ -470,18 +484,128 @@ function renderSessionSummary(
       <div class="summary-actions">
         <button type="button" class="btn btn-primary btn-lg" id="btn-replay-new">再玩一局（新題目）</button>
         <button type="button" class="btn btn-outline btn-lg" id="btn-replay-same">再試同一題</button>
+        <button type="button" class="btn btn-outline btn-lg" id="btn-challenge-friend">⚔️ 挑戰好友（PK 連結）</button>
         <button type="button" class="btn btn-outline btn-lg" id="btn-home">返回首頁</button>
       </div>
     </div>
   `;
 
-  host.querySelector('#btn-replay-new')?.addEventListener('pointerdown', () => {
+  host.querySelector('#btn-replay-new')?.addEventListener('click', () => {
     launchGame(game.id, generateFreshSeed(), record.level, false);
   });
-  host.querySelector('#btn-replay-same')?.addEventListener('pointerdown', () => {
+  host.querySelector('#btn-replay-same')?.addEventListener('click', () => {
     launchGame(game.id, record.seed, record.level, false);
   });
-  host.querySelector('#btn-home')?.addEventListener('pointerdown', renderHome);
+  host.querySelector('#btn-challenge-friend')?.addEventListener('click', () => {
+    const url = buildChallengeUrl(
+      window.location.href,
+      game.id,
+      record.seed,
+      record.level,
+      prefs.nickname || '小小探險家',
+      record.metrics.asi,
+      record.metrics.accuracy,
+    );
+    showQrModal(url, `⚔️ 挑戰 ${prefs.nickname || '小小探險家'} 的紀錄（${game.title}）`);
+  });
+  host.querySelector('#btn-home')?.addEventListener('click', renderHome);
+}
+
+function openBattleLobby(): void {
+  unmountCurrent();
+  appEl.innerHTML = '';
+  appEl.appendChild(renderShellHeader('battle'));
+  const main = document.createElement('main');
+  main.className = 'home-main';
+  appEl.appendChild(main);
+
+  renderBattleLobby(
+    main,
+    GAMES,
+    prefs.nickname,
+    (gameId, p1, p2) => startRelayBattle(gameId, p1, p2, generateFreshSeed()),
+    (p1, p2) => startLiveBattle(p1, p2),
+    renderHome,
+  );
+}
+
+function startLiveBattle(p1: string, p2: string): void {
+  unmountCurrent();
+  appEl.innerHTML = '';
+  appEl.appendChild(renderShellHeader('battle'));
+  const toolbar = document.createElement('div');
+  toolbar.className = 'game-toolbar';
+  toolbar.innerHTML = `<button type="button" class="btn btn-outline" id="btn-live-exit">← 返回對戰大廳</button>`;
+  const stageHost = document.createElement('main');
+  stageHost.className = 'game-host';
+  appEl.appendChild(toolbar);
+  appEl.appendChild(stageHost);
+
+  toolbar.querySelector('#btn-live-exit')?.addEventListener('click', openBattleLobby);
+  cleanupActiveGame = mountLiveReactionBattle(stageHost, p1, p2, generateFreshSeed(), renderHome);
+}
+
+function startRelayBattle(gameId: GameId, p1: string, p2: string, seed: number): void {
+  unmountCurrent();
+  const game = GAMES[gameId];
+  const level = prefs.levels[gameId] ?? 1;
+  appEl.innerHTML = '';
+  appEl.appendChild(renderShellHeader('battle'));
+
+  const toolbar = document.createElement('div');
+  toolbar.className = 'game-toolbar';
+  toolbar.innerHTML = `
+    <button type="button" class="btn btn-outline" id="btn-relay-exit">← 返回對戰大廳</button>
+    <h2 class="toolbar-title">⚔️ 同題接力：🔵 ${p1} 回合</h2>
+  `;
+  const stageHost = document.createElement('main');
+  stageHost.className = 'game-host';
+  appEl.appendChild(toolbar);
+  appEl.appendChild(stageHost);
+  toolbar.querySelector('#btn-relay-exit')?.addEventListener('click', openBattleLobby);
+
+  cleanupActiveGame = game.mount(stageHost, {
+    seed,
+    level,
+    showTutorial: false,
+    themeSkin: prefs.themeSkin,
+    onExit: openBattleLobby,
+    onSessionComplete: (p1Summary) => {
+      unmountCurrent();
+      stageHost.innerHTML = `
+        <div class="summary-card pop-soft">
+          <h2>🔵 ${p1} 完成！現在換 🟠 ${p2} 上場</h2>
+          <p class="muted">接下來將挑戰完全相同的題目（種子 #${seed}）</p>
+          <button type="button" class="btn btn-primary btn-lg" id="btn-p2-go">🟠 ${p2} 開始挑戰！</button>
+        </div>
+      `;
+      stageHost.querySelector('#btn-p2-go')?.addEventListener('click', () => {
+        (toolbar.querySelector('.toolbar-title') as HTMLElement).textContent = `⚔️ 同題接力：🟠 ${p2} 回合`;
+        cleanupActiveGame = game.mount(stageHost, {
+          seed,
+          level,
+          showTutorial: false,
+          themeSkin: prefs.themeSkin,
+          onExit: openBattleLobby,
+          onSessionComplete: (p2Summary) => {
+            unmountCurrent();
+            renderBattleComparison(
+              stageHost,
+              game.title,
+              p1,
+              p1Summary.metrics.asi,
+              p1Summary.metrics.accuracy,
+              p2,
+              p2Summary.metrics.asi,
+              p2Summary.metrics.accuracy,
+              () => startRelayBattle(gameId, p1, p2, generateFreshSeed()),
+              renderHome,
+            );
+          },
+        });
+      });
+    },
+  });
 }
 
 function openDashboard(): void {
@@ -494,13 +618,50 @@ function openDashboard(): void {
   void renderDashboard(main, renderHome);
 }
 
-// Boot: check if launched via classroom URL seed (?game=...&seed=...&lvl=...)
+// Boot: check if launched via classroom URL seed or async friend challenge
 const urlParams = parseUrlSeed(window.location.search);
 if (urlParams.game) {
   const targetGame = urlParams.game;
   const targetSeed = urlParams.seed ?? generateFreshSeed();
   const targetLvl = urlParams.lvl ?? prefs.levels[targetGame] ?? 1;
-  launchGame(targetGame, targetSeed, targetLvl, false);
+
+  if (urlParams.challengerName && urlParams.challengerAsi !== null && urlParams.challengerAcc !== null) {
+    const game = GAMES[targetGame];
+    appEl.innerHTML = '';
+    appEl.appendChild(renderShellHeader('battle'));
+    const banner = document.createElement('div');
+    banner.className = 'game-toolbar';
+    banner.innerHTML = `<span class="badge">⚔️ 正在挑戰 ${urlParams.challengerName} 的同題紀錄（${game.title}）</span>`;
+    const stageHost = document.createElement('main');
+    stageHost.className = 'game-host';
+    appEl.appendChild(banner);
+    appEl.appendChild(stageHost);
+
+    cleanupActiveGame = game.mount(stageHost, {
+      seed: targetSeed,
+      level: targetLvl,
+      showTutorial: false,
+      themeSkin: prefs.themeSkin,
+      onExit: renderHome,
+      onSessionComplete: (mySummary) => {
+        unmountCurrent();
+        renderBattleComparison(
+          stageHost,
+          game.title,
+          urlParams.challengerName!,
+          urlParams.challengerAsi!,
+          urlParams.challengerAcc!,
+          prefs.nickname || '我',
+          mySummary.metrics.asi,
+          mySummary.metrics.accuracy,
+          () => launchGame(targetGame, generateFreshSeed(), targetLvl, false),
+          renderHome,
+        );
+      },
+    });
+  } else {
+    launchGame(targetGame, targetSeed, targetLvl, false);
+  }
 } else {
   renderHome();
 }

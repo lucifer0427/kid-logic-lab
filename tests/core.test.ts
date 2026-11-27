@@ -6,7 +6,7 @@ import { countSolutionsLatin, generateLatinSquare } from '../src/worker/solvers/
 import { StaircaseController } from '../src/engine/dda/staircase';
 import { FuzzyDdaController } from '../src/engine/dda/fuzzyLogic';
 import { computeSessionMetrics } from '../src/telemetry/asiCalculator';
-import { buildShareUrl, parseUrlSeed } from '../src/storage/urlSeed';
+import { buildChallengeUrl, buildShareUrl, parseUrlSeed } from '../src/storage/urlSeed';
 import { evalLogicCircuit } from '../src/games/senior/logicGate';
 import { expandCommands } from '../src/games/middle/blockMaze';
 import { generateLightsOutPuzzle, toggleLightsGrid } from '../src/games/middle/lightsOut';
@@ -164,7 +164,27 @@ describe('URL Seed Sharing', () => {
   it('roundtrips game, seed, and level query parameters for all game IDs', () => {
     const url = buildShareUrl('https://example.github.io/kid-logic-lab/', 'logicGate', 48291, 2);
     const parsed = parseUrlSeed(new URL(url).search);
-    expect(parsed).toEqual({ game: 'logicGate', seed: 48291, lvl: 2 });
+    expect(parsed).toEqual({
+      game: 'logicGate',
+      seed: 48291,
+      lvl: 2,
+      challengerName: null,
+      challengerAsi: null,
+      challengerAcc: null,
+    });
+  });
+
+  it('roundtrips async friend challenge URL parameters', () => {
+    const url = buildChallengeUrl('https://example.github.io/kid-logic-lab/', 'sudoku6x6', 12345, 1, '小宇', 92.4, 0.95);
+    const parsed = parseUrlSeed(new URL(url).search);
+    expect(parsed).toEqual({
+      game: 'sudoku6x6',
+      seed: 12345,
+      lvl: 1,
+      challengerName: '小宇',
+      challengerAsi: 92.4,
+      challengerAcc: 0.95,
+    });
   });
 });
 
