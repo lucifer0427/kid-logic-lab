@@ -26,27 +26,42 @@ const VALID_TAKUZU_6X6: readonly number[][] = [
 ];
 
 export function isValidTakuzuBoard(board: number[]): boolean {
+  const fullRows = new Set<string>();
+  const fullCols = new Set<string>();
+
   for (let r = 0; r < 6; r++) {
     let zeros = 0;
     let ones = 0;
+    let rowKey = '';
     for (let c = 0; c < 6; c++) {
       const v = board[r * 6 + c];
       if (v === 0) zeros++;
       else if (v === 1) ones++;
       if (c >= 2 && v !== -1 && v === board[r * 6 + c - 1] && v === board[r * 6 + c - 2]) return false;
+      rowKey += String(v);
     }
     if (zeros > 3 || ones > 3) return false;
+    if (zeros + ones === 6) {
+      if (fullRows.has(rowKey)) return false;
+      fullRows.add(rowKey);
+    }
   }
   for (let c = 0; c < 6; c++) {
     let zeros = 0;
     let ones = 0;
+    let colKey = '';
     for (let r = 0; r < 6; r++) {
       const v = board[r * 6 + c];
       if (v === 0) zeros++;
       else if (v === 1) ones++;
       if (r >= 2 && v !== -1 && v === board[(r - 1) * 6 + c] && v === board[(r - 2) * 6 + c]) return false;
+      colKey += String(v);
     }
     if (zeros > 3 || ones > 3) return false;
+    if (zeros + ones === 6) {
+      if (fullCols.has(colKey)) return false;
+      fullCols.add(colKey);
+    }
   }
   return true;
 }
@@ -144,7 +159,7 @@ export const binaryPuzzleGame: GameModule = {
           }
           render();
 
-          const solved = grid.every((v, i) => v === solution[i]);
+          const solved = grid.every((v) => v !== -1) && isValidTakuzuBoard(grid);
           if (solved) {
             audioGateway.playTone('complete');
             const metrics = computeSessionMetrics(trials);

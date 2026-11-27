@@ -109,12 +109,15 @@ export const shadowMatchGame: GameModule = {
         )
         .join('');
 
+      let roundResolved = false;
       choicesHost.querySelectorAll<HTMLButtonElement>('.matrix-opt-btn').forEach((btn) => {
         btn.addEventListener('click', () => {
+          if (roundResolved || disposed) return;
           audioGateway.unlock();
           const chosen = options[Number(btn.dataset.idx)];
           const rtMs = Math.round(performance.now() - roundStartMs);
           if (chosen.isCorrect) {
+            roundResolved = true;
             audioGateway.playPentatonic(round);
             trials.push({ isTarget: true, correct: true, rtMs, errorType: 'none' });
             statusLine.textContent = '賓果！影子完全符合！';

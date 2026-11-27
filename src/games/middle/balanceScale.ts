@@ -95,9 +95,12 @@ export const balanceScaleGame: GameModule = {
       guessA = 1;
       guessB = 1;
       guessC = 1;
+      transitioning = false;
       roundStartMs = performance.now();
       render();
     }
+
+    let transitioning = false;
 
     function render(): void {
       if (disposed) return;
@@ -168,11 +171,13 @@ export const balanceScaleGame: GameModule = {
     }
 
     checkBtn.addEventListener('click', () => {
+      if (transitioning || disposed) return;
       audioGateway.unlock();
       const rtMs = Math.round(performance.now() - roundStartMs);
       const ok = guessA === spec.wA && guessB === spec.wB && (!spec.useThree || guessC === spec.wC);
 
       if (ok) {
+        transitioning = true;
         audioGateway.playTone('success');
         trials.push({ isTarget: true, correct: true, rtMs, errorType: 'none' });
         statusLine.textContent = '完全正確！等量代換推算成功！';

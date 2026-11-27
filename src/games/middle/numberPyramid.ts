@@ -98,12 +98,15 @@ export const numberPyramidGame: GameModule = {
         .map((n) => `<button type="button" class="btn btn-outline btn-lg pyr-opt" data-v="${n}">${n}</button>`)
         .join('');
 
+      let roundResolved = false;
       choicesHost.querySelectorAll<HTMLButtonElement>('.pyr-opt').forEach((btn) => {
         btn.addEventListener('click', () => {
+          if (roundResolved || disposed) return;
           audioGateway.unlock();
           const chosen = Number(btn.dataset.v);
           const rtMs = Math.round(performance.now() - roundStartMs);
           if (chosen === answer) {
+            roundResolved = true;
             audioGateway.playPentatonic(round);
             trials.push({ isTarget: true, correct: true, rtMs, errorType: 'none' });
             statusLine.textContent = `算對了！答案就是 ${answer}`;

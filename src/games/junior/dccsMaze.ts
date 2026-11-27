@@ -126,11 +126,15 @@ export const dccsMazeGame: GameModule = {
         });
       });
 
+      awaiting = true;
       trialStartMs = performance.now();
     }
 
+    let awaiting = false;
+
     function handlePick(binIdx: number): void {
-      if (disposed) return;
+      if (disposed || !awaiting) return;
+      awaiting = false;
       audioGateway.unlock();
       const rtMs = Math.round(performance.now() - trialStartMs);
       const expectedBin = rule === 'color' ? stimulusColorIdx : stimulusShapeIdx;

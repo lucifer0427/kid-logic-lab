@@ -97,12 +97,15 @@ export const oddOneOutGame: GameModule = {
         </div>
       `;
 
+      let roundResolved = false;
       boardHost.querySelectorAll<HTMLButtonElement>('.odd-cell').forEach((btn) => {
         btn.addEventListener('click', () => {
+          if (roundResolved || disposed) return;
           audioGateway.unlock();
           const idx = Number(btn.dataset.idx);
           const rtMs = Math.round(performance.now() - roundStartMs);
           if (idx === oddPos) {
+            roundResolved = true;
             audioGateway.playPentatonic(round);
             trials.push({ isTarget: true, correct: true, rtMs, errorType: 'none' });
             statusLine.textContent = '眼力真好！馬上看出不一樣的地方';

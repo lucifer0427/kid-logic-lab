@@ -148,9 +148,12 @@ export const matrixPatternGame: GameModule = {
         )
         .join('');
 
+      let roundResolved = false;
       optionsHost.querySelectorAll<HTMLButtonElement>('.matrix-opt-btn').forEach((btn) => {
         btn.addEventListener('pointerdown', (e) => {
           e.preventDefault();
+          if (roundResolved || disposed) return;
+          roundResolved = true;
           audioGateway.unlock();
           const chosen = options[Number(btn.dataset.opt)];
           const rtMs = Math.round(performance.now() - trialStartMs);

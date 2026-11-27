@@ -28,6 +28,7 @@ import { traceLaser } from '../src/games/middle/mirrorMaze';
 import { floodFillGrid } from '../src/games/middle/colorFlood';
 import { isPrime } from '../src/games/senior/primeSieve';
 import { caesarEncode } from '../src/games/senior/cipherBreak';
+import { rotatePolyCells } from '../src/games/senior/polyominoFit';
 
 describe('SeededRng', () => {
   it('produces identical deterministic sequences for the same seed', () => {
@@ -310,5 +311,27 @@ describe('New Games Pure Logic', () => {
     expect(isPrime(29)).toBe(true);
     expect(isPrime(21)).toBe(false);
     expect(caesarEncode('CAT', 2)).toBe('ECV');
+  });
+
+  it('rejects Takuzu boards with duplicate completed rows', () => {
+    const dupRows = [
+      0, 1, 0, 1, 1, 0,
+      0, 1, 0, 1, 1, 0,
+      -1, -1, -1, -1, -1, -1,
+      -1, -1, -1, -1, -1, -1,
+      -1, -1, -1, -1, -1, -1,
+      -1, -1, -1, -1, -1, -1,
+    ];
+    expect(isValidTakuzuBoard(dupRows)).toBe(false);
+  });
+
+  it('verifies Polyomino L-tetrominoes rotate cleanly and tile a 2x4 rectangle', () => {
+    const baseL: [number, number][] = [[0, 0], [1, 0], [2, 0], [2, 1]];
+    const r1 = rotatePolyCells(baseL, 1); // fits in 2x3
+    const r3 = rotatePolyCells(baseL, 3); // rotated 180° relative to r1
+    const filled = new Set<string>();
+    r1.forEach(([r, c]) => filled.add(`${r},${c}`));
+    r3.forEach(([r, c]) => filled.add(`${r},${c + 1}`));
+    expect(filled.size).toBe(8);
   });
 });

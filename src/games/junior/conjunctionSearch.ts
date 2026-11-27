@@ -120,14 +120,17 @@ export const conjunctionSearchGame: GameModule = {
         </div>
       `;
 
+      let roundResolved = false;
       boardHost.querySelectorAll<HTMLButtonElement>('.conjunction-cell').forEach((btn) => {
         btn.addEventListener('pointerdown', (e) => {
           e.preventDefault();
+          if (roundResolved || disposed) return;
           audioGateway.unlock();
           const idx = Number(btn.dataset.idx);
           const rtMs = Math.round(performance.now() - roundStartMs);
 
           if (idx === targetPos) {
+            roundResolved = true;
             audioGateway.playPentatonic(round);
             trials.push({ isTarget: true, correct: true, rtMs, errorType: 'none' });
             staircase.record(true);

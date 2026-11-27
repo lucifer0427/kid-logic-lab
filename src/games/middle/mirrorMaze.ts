@@ -70,14 +70,20 @@ export const mirrorMazeGame: GameModule = {
     const rng = new SeededRng(config.seed);
     const lvl = LASER_LEVELS[rng.int(0, LASER_LEVELS.length - 1)];
     const grid = new Array<MirrorCell>(lvl.size * lvl.size).fill(0);
-    // Initialize mirrors to wrong orientation so player rotates them
+    // Initialize mirrors ensuring the puzzle is NOT already solved on load
     lvl.mirrorCells.forEach((idx, i) => {
       grid[idx] = i % 2 === 0 ? 1 : 2;
     });
+    const initBeam = traceLaser(grid, lvl.size, lvl.start[0], lvl.start[1], lvl.start[2]);
+    if (initBeam.some(([r, c]) => r === lvl.goal[0] && c === lvl.goal[1])) {
+      const firstMirror = lvl.mirrorCells[0];
+      grid[firstMirror] = grid[firstMirror] === 1 ? 2 : 1;
+    }
 
     const trials: TrialRecord[] = [];
     let lastTapMs = performance.now();
     let disposed = false;
+    let completed = false;
 
     container.innerHTML = '';
     const wrapper = document.createElement('div');
@@ -138,7 +144,7 @@ export const mirrorMazeGame: GameModule = {
 
       boardHost.querySelectorAll<HTMLButtonElement>('.is-mirror').forEach((btn) => {
         btn.addEventListener('click', () => {
-          if (disposed) return;
+          if (disposed || completed) return;
           audioGateway.unlock();
           const idx = Number(btn.dataset.idx);
           grid[idx] = grid[idx] === 1 ? 2 : 1;
@@ -151,6 +157,7 @@ export const mirrorMazeGame: GameModule = {
 
           const newBeam = traceLaser(grid, lvl.size, lvl.start[0], lvl.start[1], lvl.start[2]);
           if (newBeam.some(([r, c]) => r === lvl.goal[0] && c === lvl.goal[1])) {
+            completed = true;
             audioGateway.playTone('complete');
             statusLine.textContent = '雷射精準反射擊中寶石 💎！';
             const metrics = computeSessionMetrics(trials);

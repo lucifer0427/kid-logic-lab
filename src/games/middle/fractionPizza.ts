@@ -99,9 +99,12 @@ export const fractionPizzaGame: GameModule = {
       denom = denoms[rng.int(0, denoms.length - 1)];
       targetNum = rng.int(1, denom - 1);
       selected = new Array<boolean>(denom).fill(false);
+      transitioning = false;
       roundStartMs = performance.now();
       render();
     }
+
+    let transitioning = false;
 
     function render(): void {
       if (disposed) return;
@@ -121,10 +124,12 @@ export const fractionPizzaGame: GameModule = {
     }
 
     checkBtn.addEventListener('click', () => {
+      if (transitioning || disposed) return;
       audioGateway.unlock();
       const rtMs = Math.round(performance.now() - roundStartMs);
       const count = selected.filter(Boolean).length;
       if (count === targetNum) {
+        transitioning = true;
         audioGateway.playTone('success');
         trials.push({ isTarget: true, correct: true, rtMs, errorType: 'none' });
         statusLine.textContent = `太棒了！這剛好是 ${targetNum}/${denom} 個披薩！`;

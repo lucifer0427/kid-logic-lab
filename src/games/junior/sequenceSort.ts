@@ -106,12 +106,15 @@ export const sequenceSortGame: GameModule = {
         )
         .join('');
 
+      let roundResolved = false;
       choicesHost.querySelectorAll<HTMLButtonElement>('.token-pick-btn').forEach((btn) => {
         btn.addEventListener('click', () => {
+          if (roundResolved || disposed) return;
           audioGateway.unlock();
           const chosen = Number(btn.dataset.tok);
           const rtMs = Math.round(performance.now() - roundStartMs);
           if (chosen === answer) {
+            roundResolved = true;
             audioGateway.playPentatonic(round);
             trials.push({ isTarget: true, correct: true, rtMs, errorType: 'none' });
             statusLine.textContent = '接對了！規律找得真準！';

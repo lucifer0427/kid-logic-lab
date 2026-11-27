@@ -101,6 +101,7 @@ export const nonogramGame: GameModule = {
     let lastTapMs = performance.now();
     const trials: TrialRecord[] = [];
     let disposed = false;
+    let completed = false;
 
     const rowClues = Array.from({ length: 5 }, (_, r) => computeRuns(pic.grid.slice(r * 5, r * 5 + 5)));
     const colClues = Array.from({ length: 5 }, (_, c) =>
@@ -191,7 +192,7 @@ export const nonogramGame: GameModule = {
     }
 
     function handleTap(idx: number): void {
-      if (disposed) return;
+      if (disposed || completed) return;
       audioGateway.unlock();
       const now = performance.now();
       const rtMs = Math.round(now - lastTapMs);
@@ -223,6 +224,7 @@ export const nonogramGame: GameModule = {
 
       const solved = pic.grid.every((expected, i) => (expected === 1) === (cells[i] === 1));
       if (solved) {
+        completed = true;
         audioGateway.playTone('complete');
         statusLine.textContent = `揭曉像素畫：${pic.emoji} ${pic.name}！`;
         const metrics = computeSessionMetrics(trials);

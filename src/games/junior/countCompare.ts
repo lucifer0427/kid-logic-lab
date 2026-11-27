@@ -92,8 +92,11 @@ export const countCompareGame: GameModule = {
         <button type="button" class="btn btn-outline btn-lg cmp-btn" data-ans="right">右邊多 ➡</button>
       `;
 
+      let roundResolved = false;
       btnHost.querySelectorAll<HTMLButtonElement>('.cmp-btn').forEach((btn) => {
         btn.addEventListener('click', () => {
+          if (roundResolved || disposed) return;
+          roundResolved = true;
           audioGateway.unlock();
           const chosen = btn.dataset.ans as 'left' | 'right' | 'equal';
           const rtMs = Math.round(performance.now() - roundStartMs);

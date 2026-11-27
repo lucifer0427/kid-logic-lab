@@ -133,9 +133,12 @@ export const target24Game: GameModule = {
       nums = [...TARGET_24_SETS[pickedIndices[round]]];
       usedMask = [false, false, false, false];
       exprTokens = [];
+      transitioning = false;
       roundStartMs = performance.now();
       render();
     }
+
+    let transitioning = false;
 
     function render(): void {
       if (disposed) return;
@@ -201,6 +204,7 @@ export const target24Game: GameModule = {
       });
 
       opsHost.querySelector('#t24-check')?.addEventListener('click', () => {
+        if (transitioning || disposed) return;
         audioGateway.unlock();
         const rtMs = Math.round(performance.now() - roundStartMs);
         if (!usedMask.every(Boolean)) {
@@ -209,6 +213,7 @@ export const target24Game: GameModule = {
         }
         const val = evaluateArithmeticExpr(exprTokens.map((t) => t.text).join(''));
         if (val !== null && Math.abs(val - 24) < 1e-6) {
+          transitioning = true;
           audioGateway.playTone('success');
           trials.push({ isTarget: true, correct: true, rtMs, errorType: 'none' });
           statusLine.textContent = '太聰明了！算式剛好等於 24！';

@@ -87,8 +87,8 @@ export const hanoiGame: GameModule = {
           const isSelected = selectedPeg === pIdx;
           const discsSvg = stack
             .map((discSize, depthIdx) => {
-              const w = 44 + discSize * 26;
-              const h = 28;
+              const w = 36 + discSize * 22;
+              const h = 26;
               const x = pegX[pIdx] - w / 2;
               const y = baseY - (depthIdx + 1) * (h + 4);
               const color = OKABE_ITO_PALETTE[(discSize - 1) % OKABE_ITO_PALETTE.length].hex;

@@ -22,7 +22,7 @@ export function createTutorialOverlay(
   `;
 
   const btn = overlay.querySelector('.tutorial-start-btn') as HTMLButtonElement;
-  btn.addEventListener('pointerdown', () => {
+  btn.addEventListener('click', () => {
     overlay.remove();
     onStart();
   });

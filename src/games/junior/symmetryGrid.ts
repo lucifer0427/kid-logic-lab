@@ -85,9 +85,12 @@ export const symmetryGridGame: GameModule = {
 
       leftPattern = Array.from({ length: totalHalf }, (_, i) => picks.has(i));
       rightGrid = new Array<boolean>(totalHalf).fill(false);
+      transitioning = false;
       lastTapMs = performance.now();
       render();
     }
+
+    let transitioning = false;
 
     function render(): void {
       if (disposed) return;
@@ -130,6 +133,7 @@ export const symmetryGridGame: GameModule = {
     }
 
     checkBtn.addEventListener('click', () => {
+      if (transitioning || disposed) return;
       audioGateway.unlock();
       const rtMs = Math.round(performance.now() - lastTapMs);
       lastTapMs = performance.now();
@@ -145,6 +149,7 @@ export const symmetryGridGame: GameModule = {
       }
 
       if (allMatch) {
+        transitioning = true;
         audioGateway.playTone('success');
         trials.push({ isTarget: true, correct: true, rtMs, errorType: 'none' });
         staircase.record(true);

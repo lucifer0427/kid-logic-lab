@@ -116,12 +116,15 @@ export const clockMatchGame: GameModule = {
         .map((opt) => `<button type="button" class="btn btn-outline btn-lg clock-opt" data-t="${opt}">${opt}</button>`)
         .join('');
 
+      let roundResolved = false;
       choicesHost.querySelectorAll<HTMLButtonElement>('.clock-opt').forEach((btn) => {
         btn.addEventListener('click', () => {
+          if (roundResolved || disposed) return;
           audioGateway.unlock();
           const chosen = btn.dataset.t!;
           const rtMs = Math.round(performance.now() - roundStartMs);
           if (chosen === ans) {
+            roundResolved = true;
             audioGateway.playPentatonic(round);
             trials.push({ isTarget: true, correct: true, rtMs, errorType: 'none' });
             statusLine.textContent = `答對了！現在是 ${ans}`;

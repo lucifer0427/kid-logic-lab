@@ -58,6 +58,7 @@ export const setMatchGame: GameModule = {
     let round = 0;
     let cards: SetCard[] = [];
     let selected: number[] = [];
+    let locked = false;
     let roundStartMs = performance.now();
     let disposed = false;
 
@@ -126,6 +127,7 @@ export const setMatchGame: GameModule = {
       visualTimer.setProgress(round / TOTAL_ROUNDS);
       cards = buildRoundBoard();
       selected = [];
+      locked = false;
       roundStartMs = performance.now();
       render();
     }
@@ -155,6 +157,7 @@ export const setMatchGame: GameModule = {
 
       boardHost.querySelectorAll<HTMLButtonElement>('.set-card').forEach((btn) => {
         btn.addEventListener('click', () => {
+          if (locked || disposed) return;
           audioGateway.unlock();
           const idx = Number(btn.dataset.idx);
           if (selected.includes(idx)) {
@@ -167,6 +170,7 @@ export const setMatchGame: GameModule = {
           render();
 
           if (selected.length === 3) {
+            locked = true;
             const rtMs = Math.round(performance.now() - roundStartMs);
             const [i, j, k] = selected;
             if (isValidSet(cards[i], cards[j], cards[k])) {
@@ -180,7 +184,10 @@ export const setMatchGame: GameModule = {
               trials.push({ isTarget: true, correct: false, rtMs, errorType: 'rule' });
               statusLine.textContent = '這 3 張有一個維度出現「兩同ㄧ異」囉，換一張試試！';
               selected = [];
-              window.setTimeout(render, 350);
+              window.setTimeout(() => {
+                locked = false;
+                render();
+              }, 350);
             }
           }
         });

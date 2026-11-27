@@ -94,12 +94,15 @@ export const cipherBreakGame: GameModule = {
         .map((w) => `<button type="button" class="btn btn-outline btn-lg ciph-opt" data-w="${w}">${w}</button>`)
         .join('');
 
+      let roundResolved = false;
       choicesHost.querySelectorAll<HTMLButtonElement>('.ciph-opt').forEach((btn) => {
         btn.addEventListener('click', () => {
+          if (roundResolved || disposed) return;
           audioGateway.unlock();
           const chosen = btn.dataset.w!;
           const rtMs = Math.round(performance.now() - roundStartMs);
           if (chosen === plain) {
+            roundResolved = true;
             audioGateway.playPentatonic(round);
             trials.push({ isTarget: true, correct: true, rtMs, errorType: 'none' });
             statusLine.textContent = `破譯成功！密文 ${encoded} 就是 ${plain}`;

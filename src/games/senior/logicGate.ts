@@ -113,9 +113,12 @@ export const logicGateGame: GameModule = {
         }
       }
 
+      transitioning = false;
       roundStartMs = performance.now();
       render();
     }
+
+    let transitioning = false;
 
     function render(): void {
       if (disposed) return;
@@ -197,10 +200,12 @@ export const logicGateGame: GameModule = {
         render();
       });
       controlsHost.querySelector('#btn-check-circuit')?.addEventListener('pointerdown', () => {
+        if (transitioning || disposed) return;
         audioGateway.unlock();
         const rtMs = Math.round(performance.now() - roundStartMs);
         const currentOut = evalLogicCircuit(a, b, c, puzzle);
         if (currentOut === puzzle.targetOutput) {
+          transitioning = true;
           audioGateway.playTone('success');
           trials.push({ isTarget: true, correct: true, rtMs, errorType: 'none' });
           statusLine.textContent = '電路推導正確！';
