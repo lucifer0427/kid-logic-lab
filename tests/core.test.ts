@@ -23,6 +23,11 @@ import { SOKOBAN_MAPS } from '../src/games/middle/sokoban';
 import { escapeHtml } from '../src/ui/escapeHtml';
 import { isKnightMove } from '../src/games/senior/knightTour';
 import { isValidSet } from '../src/games/senior/setMatch';
+import { ALL_GAME_IDS } from '../src/engine/types';
+import { traceLaser } from '../src/games/middle/mirrorMaze';
+import { floodFillGrid } from '../src/games/middle/colorFlood';
+import { isPrime } from '../src/games/senior/primeSieve';
+import { caesarEncode } from '../src/games/senior/cipherBreak';
 
 describe('SeededRng', () => {
   it('produces identical deterministic sequences for the same seed', () => {
@@ -280,5 +285,30 @@ describe('New Games Pure Logic', () => {
         { color: 1, shape: 2, count: 3 },
       ),
     ).toBe(false);
+  });
+
+  it('registers all 50 distinct games in ALL_GAME_IDS', () => {
+    expect(new Set(ALL_GAME_IDS).size).toBe(50);
+    expect(ALL_GAME_IDS).toHaveLength(50);
+  });
+
+  it('traces Laser Mirror Maze reflections accurately', () => {
+    // 4x4 grid: start (0,0) heading East, '\' mirror at (0,3) reflects South to (3,3)
+    const grid = new Array(16).fill(0);
+    grid[3] = 2; // '\'
+    const beam = traceLaser(grid, 4, 0, 0, 1);
+    expect(beam[beam.length - 1]).toEqual([3, 3]);
+  });
+
+  it('performs Color Flood Fill from top-left origin', () => {
+    const res = floodFillGrid([0, 0, 1, 0, 1, 1, 2, 2, 2], 3, 1);
+    expect(res.slice(0, 6)).toEqual([1, 1, 1, 1, 1, 1]);
+  });
+
+  it('checks primes and Caesar cipher encoding accurately', () => {
+    expect(isPrime(2)).toBe(true);
+    expect(isPrime(29)).toBe(true);
+    expect(isPrime(21)).toBe(false);
+    expect(caesarEncode('CAT', 2)).toBe('ECV');
   });
 });

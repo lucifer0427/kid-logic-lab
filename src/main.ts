@@ -11,6 +11,11 @@ import { mastermindGame } from './games/junior/mastermind';
 import { waitSignalGame } from './games/junior/waitSignal';
 import { oddOneOutGame } from './games/junior/oddOneOut';
 import { sequenceSortGame } from './games/junior/sequenceSort';
+import { countCompareGame } from './games/junior/countCompare';
+import { clockMatchGame } from './games/junior/clockMatch';
+import { memoryPairsGame } from './games/junior/memoryPairs';
+import { shadowMatchGame } from './games/junior/shadowMatch';
+import { storyOrderGame } from './games/junior/storyOrder';
 import { hanoiGame } from './games/middle/hanoi';
 import { spatialConflictGame } from './games/middle/spatialConflict';
 import { matrixPatternGame } from './games/middle/matrixPattern';
@@ -22,6 +27,12 @@ import { balanceScaleGame } from './games/middle/balanceScale';
 import { flankerFishGame } from './games/middle/flankerFish';
 import { bridgesGame } from './games/middle/bridges';
 import { pathFinderGame } from './games/middle/pathFinder';
+import { wordSearchGame } from './games/middle/wordSearch';
+import { fractionPizzaGame } from './games/middle/fractionPizza';
+import { mirrorMazeGame } from './games/middle/mirrorMaze';
+import { numberPyramidGame } from './games/middle/numberPyramid';
+import { colorFloodGame } from './games/middle/colorFlood';
+import { anagramSortGame } from './games/middle/anagramSort';
 import { nbackGame } from './games/senior/nback';
 import { logicGateGame } from './games/senior/logicGate';
 import { sudoku6x6Game } from './games/senior/sudoku6x6';
@@ -34,6 +45,11 @@ import { target24Game } from './games/senior/target24';
 import { axCptGame } from './games/senior/axCpt';
 import { knightTourGame } from './games/senior/knightTour';
 import { setMatchGame } from './games/senior/setMatch';
+import { primeSieveGame } from './games/senior/primeSieve';
+import { cipherBreakGame } from './games/senior/cipherBreak';
+import { hitoriGame } from './games/senior/hitori';
+import { futoshikiGame } from './games/senior/futoshiki';
+import { polyominoFitGame } from './games/senior/polyominoFit';
 import { loadPrefs, savePrefs } from './storage/prefs';
 import { saveSession } from './storage/db';
 import { buildChallengeUrl, buildShareUrl, parseUrlSeed } from './storage/urlSeed';
@@ -67,6 +83,11 @@ const GAMES: Record<GameId, GameModule> = {
   waitSignal: waitSignalGame,
   oddOneOut: oddOneOutGame,
   sequenceSort: sequenceSortGame,
+  countCompare: countCompareGame,
+  clockMatch: clockMatchGame,
+  memoryPairs: memoryPairsGame,
+  shadowMatch: shadowMatchGame,
+  storyOrder: storyOrderGame,
   hanoi: hanoiGame,
   spatialConflict: spatialConflictGame,
   matrixPattern: matrixPatternGame,
@@ -78,6 +99,12 @@ const GAMES: Record<GameId, GameModule> = {
   flankerFish: flankerFishGame,
   bridges: bridgesGame,
   pathFinder: pathFinderGame,
+  wordSearch: wordSearchGame,
+  fractionPizza: fractionPizzaGame,
+  mirrorMaze: mirrorMazeGame,
+  numberPyramid: numberPyramidGame,
+  colorFlood: colorFloodGame,
+  anagramSort: anagramSortGame,
   nback: nbackGame,
   logicGate: logicGateGame,
   sudoku6x6: sudoku6x6Game,
@@ -90,6 +117,11 @@ const GAMES: Record<GameId, GameModule> = {
   axCpt: axCptGame,
   knightTour: knightTourGame,
   setMatch: setMatchGame,
+  primeSieve: primeSieveGame,
+  cipherBreak: cipherBreakGame,
+  hitori: hitoriGame,
+  futoshiki: futoshikiGame,
+  polyominoFit: polyominoFitGame,
 };
 
 const ADHD_GAME_IDS: readonly GameId[] = [

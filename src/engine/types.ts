@@ -36,7 +36,23 @@ export type GameId =
   | 'bridges'
   | 'pathFinder'
   | 'knightTour'
-  | 'setMatch';
+  | 'setMatch'
+  | 'countCompare'
+  | 'clockMatch'
+  | 'memoryPairs'
+  | 'shadowMatch'
+  | 'storyOrder'
+  | 'wordSearch'
+  | 'fractionPizza'
+  | 'mirrorMaze'
+  | 'numberPyramid'
+  | 'colorFlood'
+  | 'anagramSort'
+  | 'primeSieve'
+  | 'cipherBreak'
+  | 'hitori'
+  | 'futoshiki'
+  | 'polyominoFit';
 
 export const ALL_GAME_IDS: readonly GameId[] = [
   'gonogo',
@@ -50,6 +66,11 @@ export const ALL_GAME_IDS: readonly GameId[] = [
   'waitSignal',
   'oddOneOut',
   'sequenceSort',
+  'countCompare',
+  'clockMatch',
+  'memoryPairs',
+  'shadowMatch',
+  'storyOrder',
   'hanoi',
   'spatialConflict',
   'matrixPattern',
@@ -61,6 +82,12 @@ export const ALL_GAME_IDS: readonly GameId[] = [
   'flankerFish',
   'bridges',
   'pathFinder',
+  'wordSearch',
+  'fractionPizza',
+  'mirrorMaze',
+  'numberPyramid',
+  'colorFlood',
+  'anagramSort',
   'nback',
   'logicGate',
   'sudoku6x6',
@@ -73,6 +100,11 @@ export const ALL_GAME_IDS: readonly GameId[] = [
   'axCpt',
   'knightTour',
   'setMatch',
+  'primeSieve',
+  'cipherBreak',
+  'hitori',
+  'futoshiki',
+  'polyominoFit',
 ] as const;
 
 export type CognitiveAxis =
