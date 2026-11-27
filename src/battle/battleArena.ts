@@ -86,6 +86,7 @@ export function mountLiveReactionBattle(
   p1Name: string,
   p2Name: string,
   seed: number,
+  onRematch: () => void,
   onExit: () => void,
 ): () => void {
   const TOTAL_ROUNDS = 12;
@@ -229,9 +230,7 @@ export function mountLiveReactionBattle(
         </div>
       </div>
     `;
-    container.querySelector('#live-rematch')?.addEventListener('click', () => {
-      mountLiveReactionBattle(container, p1Name, p2Name, seed + 1, onExit);
-    });
+    container.querySelector('#live-rematch')?.addEventListener('click', onRematch);
     container.querySelector('#live-home')?.addEventListener('click', onExit);
   }
 

@@ -105,8 +105,16 @@ export const wordSearchGame: GameModule = {
           }
 
           selected.push(idx);
-          const formed = selected.map((i) => grid[i]).join('');
-          const matchWord = targets.find((w) => !foundWords.has(w) && w === formed);
+          const matchWord = targets.find((w) => {
+            if (foundWords.has(w)) return false;
+            const coords = targetCoords.get(w)!;
+            return coords.length === selected.length && coords.every((c, i) => c === selected[i]);
+          });
+          const isPrefix = targets.some((w) => {
+            if (foundWords.has(w)) return false;
+            const coords = targetCoords.get(w)!;
+            return selected.length <= coords.length && selected.every((c, i) => c === coords[i]);
+          });
 
           const rtMs = Math.round(performance.now() - lastTapMs);
           if (matchWord) {
@@ -133,7 +141,7 @@ export const wordSearchGame: GameModule = {
                 },
               });
             }
-          } else if (selected.length >= 4 || !targets.some((w) => !foundWords.has(w) && w.startsWith(formed))) {
+          } else if (!isPrefix) {
             audioGateway.playTone('gentle');
             trials.push({ isTarget: true, correct: false, rtMs, errorType: 'commission' });
             selected = [];

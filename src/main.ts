@@ -439,13 +439,7 @@ function renderHome(): void {
     });
   });
 
-  main.querySelectorAll<HTMLButtonElement>('.launch-btn').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      audioGateway.unlock();
-      const gameId = btn.dataset.game as GameId;
-      launchGame(gameId, generateFreshSeed(), prefs.levels[gameId] ?? 1, true);
-    });
-  });
+  bindLaunchButtons();
 }
 
 function launchGame(gameId: GameId, seed: number, level: number, showTutorial: boolean): void {
@@ -639,13 +633,22 @@ function startLiveBattle(p1: string, p2: string): void {
   appEl.appendChild(stageHost);
 
   toolbar.querySelector('#btn-live-exit')?.addEventListener('click', openBattleLobby);
-  cleanupActiveGame = mountLiveReactionBattle(stageHost, p1, p2, generateFreshSeed(), renderHome);
+  cleanupActiveGame = mountLiveReactionBattle(
+    stageHost,
+    p1,
+    p2,
+    generateFreshSeed(),
+    () => startLiveBattle(p1, p2),
+    renderHome,
+  );
 }
 
 function startRelayBattle(gameId: GameId, p1: string, p2: string, seed: number): void {
   unmountCurrent();
   const game = GAMES[gameId];
   const level = prefs.levels[gameId] ?? 1;
+  const safeP1 = escapeHtml(p1);
+  const safeP2 = escapeHtml(p2);
   appEl.innerHTML = '';
   appEl.appendChild(renderShellHeader('battle'));
 
@@ -653,7 +656,7 @@ function startRelayBattle(gameId: GameId, p1: string, p2: string, seed: number):
   toolbar.className = 'game-toolbar';
   toolbar.innerHTML = `
     <button type="button" class="btn btn-outline" id="btn-relay-exit">← 返回對戰大廳</button>
-    <h2 class="toolbar-title">⚔️ 同題接力：🔵 ${p1} 回合</h2>
+    <h2 class="toolbar-title">⚔️ 同題接力：🔵 ${safeP1} 回合</h2>
   `;
   const stageHost = document.createElement('main');
   stageHost.className = 'game-host';
@@ -671,9 +674,9 @@ function startRelayBattle(gameId: GameId, p1: string, p2: string, seed: number):
       unmountCurrent();
       stageHost.innerHTML = `
         <div class="summary-card pop-soft">
-          <h2>🔵 ${p1} 完成！現在換 🟠 ${p2} 上場</h2>
+          <h2>🔵 ${safeP1} 完成！現在換 🟠 ${safeP2} 上場</h2>
           <p class="muted">接下來將挑戰完全相同的題目（種子 #${seed}）</p>
-          <button type="button" class="btn btn-primary btn-lg" id="btn-p2-go">🟠 ${p2} 開始挑戰！</button>
+          <button type="button" class="btn btn-primary btn-lg" id="btn-p2-go">🟠 ${safeP2} 開始挑戰！</button>
         </div>
       `;
       stageHost.querySelector('#btn-p2-go')?.addEventListener('click', () => {

@@ -18,28 +18,6 @@ interface BridgePuzzle {
   islands: Island[];
 }
 
-// Verified-solvable Hashiwokakero puzzles
-const BRIDGE_PUZZLES: readonly BridgePuzzle[] = [
-  {
-    rows: 4,
-    cols: 4,
-    islands: [
-      { id: 0, r: 0, c: 0, target: 2 },
-      { id: 1, r: 0, c: 3, target: 3 },
-      { id: 2, r: 2, c: 0, target: 3 },
-      { id: 3, r: 2, c: 3, target: 4 },
-      { id: 4, r: 3, c: 1, target: 2 },
-      { id: 5, r: 3, c: 3, target: 2 },
-    ],
-    // Wait: let's verify degrees sum to even & solvable:
-    // (0)-(1):2? No if (0)-(1):1, (0)-(2):1 -> deg0=2. (1)-(3):2 -> deg1=3. (2)-(3):2 -> deg2=3.
-    // (3)-(5):0? Wait (4) is at (3,1) with no neighbors in row 3 except (5) at (3,3)! So (4)-(5):2 -> deg4=2, deg5=2!
-    // Sum of degrees around (3): 2 (from 1) + 2 (from 2) = 4! Connected? Wait: {0,1,2,3} and {4,5} would be disconnected!
-    // Good thing I checked! Let's connect (4) at (3,0) or (2,1)? Better: put (4) at (3,0) so (2)-(4) connects!
-  },
-];
-
-// Let's define 3 100% connected, verified-solvable Bridge puzzles:
 const VERIFIED_BRIDGES: readonly BridgePuzzle[] = [
   // Puzzle 1: 4x4, 5 islands. Edges: (0)-(1):2, (1)-(3):1, (0)-(2):1, (2)-(3):1, (3)-(4):2 -> degrees: 0:3, 1:3, 2:2, 3:4, 4:2
   {
@@ -80,8 +58,6 @@ const VERIFIED_BRIDGES: readonly BridgePuzzle[] = [
     ],
   },
 ];
-
-void BRIDGE_PUZZLES;
 
 function edgeKey(a: number, b: number): string {
   return a < b ? `${a}-${b}` : `${b}-${a}`;
